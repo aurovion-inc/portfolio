@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aurovion · UI Snippets</title>
+<title>aurovion · UI Snippets</title>
 <meta name="description" content="aurovion designs and builds interfaces: 42 live UI snippets, plus design notes on contrast, hierarchy, color, states and tokens.">
 <meta name="theme-color" content="#0b0b0c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -305,14 +305,14 @@
   .footer-base a:hover { color: var(--text); }
 
   /* Code viewer */
-  .viewer { width: min(1080px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface); color: var(--text); overflow: hidden; }
+  .viewer { height: min(720px, calc(100dvh - 32px)); width: min(1080px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface); color: var(--text); overflow: hidden; }
   .viewer[open] { display: flex; flex-direction: column; }
   .viewer::backdrop { background: rgb(5 5 6 / .72); backdrop-filter: blur(6px); }
-  .viewer-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 14px 14px 24px; border-bottom: 1px solid var(--line); }
+  .viewer-head { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 14px 14px 24px; border-bottom: 1px solid var(--line); }
   .viewer-head p { font: 12px/1.4 var(--mono); color: var(--subtle); }
   .viewer-head h2 { font: 600 20px/1.3 var(--sans); letter-spacing: -.02em; }
-  .viewer-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 5fr 7fr; grid-template-rows: minmax(0, 1fr); }
-  .viewer-body iframe { width: 100%; height: 100%; min-height: min(440px, 60dvh); border: 0; border-right: 1px solid var(--line); background: #0d0d0f; }
+  .viewer-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-rows: minmax(0, 1fr); }
+  .viewer-body iframe { width: 100%; height: 100%; min-width: 0; min-height: 0; display: block; border: 0; border-right: 1px solid var(--line); background: #0d0d0f; }
   .viewer-code { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
   .viewer-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px 12px 16px; border-bottom: 1px solid var(--line); }
   .seg { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); }
@@ -376,7 +376,7 @@
     .token-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 800px) {
-    .viewer-body { grid-template-columns: 1fr; grid-template-rows: 300px minmax(0, 1fr); }
+    .viewer-body { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
     .viewer-body iframe { min-height: 0; border-right: 0; border-bottom: 1px solid var(--line); }
   }
   @media (max-width: 520px) {
@@ -394,12 +394,12 @@
 <body>
 <header class="nav">
   <div class="wrap">
-    <a class="brand" href="#top">Aurovion</a>
+    <a class="brand" href="#top">aurovion</a>
     <nav aria-label="Primary">
       <a href="#snippets">Snippets</a>
       <a href="#notes">Notes</a>
       <a href="#about">About</a>
-      <a class="btn btn-ghost btn-sm" href="slatinek.jakob@proton.me">Email me</a> <!-- TODO: your email -->
+      <a class="btn btn-ghost btn-sm" href="mailto:slatinek.jakob@proton.me">Email me</a>
     </nav>
   </div>
 </header>
@@ -700,8 +700,8 @@
   <div class="wrap footer-cta reveal">
     <h2>Let's finish something <em>together</em>.</h2>
     <div class="actions">
-      <a class="btn btn-primary" href="slatinek.jakob@proton.me">Email me</a> <!-- TODO: your email -->
-      <a class="btn btn-ghost" href="https://github.com/aurovion-inc">GitHub</a> <!-- TODO: your GitHub profile URL -->
+      <a class="btn btn-primary" href="mailto:slatinek.jakob@proton.me">Email me</a>
+      <a class="btn btn-ghost" href="https://github.com/aurovion-inc">GitHub</a>
     </div>
   </div>
   <div class="wrap footer-base">
@@ -4293,9 +4293,14 @@ document.addEventListener("click", e => {
   active = snippets[b.dataset.open];
   $("#viewer-cat").textContent = active.category;
   $("#viewer-title").textContent = active.title;
-  $("#viewer-demo").srcdoc = demo(active);
+  const preview = $("#viewer-demo");
   show("js");
   viewer.showModal();
+  requestAnimationFrame(() => {
+    if (!viewer.open) return;
+    preview.title = active.title + " live demo";
+    preview.srcdoc = demo(active);
+  });
 });
 viewer.querySelector(".seg").addEventListener("click", e => {
   const b = e.target.closest("button");
