@@ -1,0 +1,4407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jakob · UI Snippets</title>
+<meta name="description" content="Jakob designs and builds interfaces: 42 live UI snippets, plus design notes on contrast, hierarchy, color, states and tokens.">
+<meta name="theme-color" content="#0b0b0c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Geist:wght@400..700&family=Geist+Mono:wght@400..500&display=swap">
+<script>
+  // Only hide scroll-reveal content when it can animate back in.
+  if (matchMedia("(prefers-reduced-motion: no-preference)").matches && "IntersectionObserver" in window)
+    document.documentElement.classList.add("reveal-on");
+</script>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0b0c;
+    --surface: #121214;
+    --surface-2: #1a1a1d;
+    --line: rgb(245 242 235 / .08);
+    --line-strong: rgb(245 242 235 / .16);
+    --text: #f5f2eb;
+    --muted: #a1a1aa;
+    --subtle: #85858f;
+    --accent: #e97949;
+    --accent-hover: #f08c62;
+    --accent-ink: #0b0b0c;
+    --wine: #6b1f33;
+    /* Shape rule: controls are pills, surfaces 20px, blocks nested inside a surface 14px. */
+    --r: 20px;
+    --r-inner: 14px;
+    --ease: cubic-bezier(.16, 1, .3, 1);
+    --serif: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+    --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SF Mono", Consolas, monospace;
+    --canvas: radial-gradient(circle at center, rgb(255 255 255 / .07) 1px, transparent 1.5px) 0 0 / 20px 20px, #0d0d0f;
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { scroll-padding-top: 88px; scrollbar-gutter: stable; }
+  html:has(.viewer[open]) { overflow: hidden; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 400 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+  h1, h2, h3, h4 { margin: 0; text-wrap: balance; }
+  h1, h2 { font-family: var(--serif); font-weight: 500; line-height: 1.05; letter-spacing: -.015em; }
+  h3, h4 { font-weight: 600; }
+  em { font-style: italic; }
+  p, figure, dl, dd { margin: 0; }
+  p { text-wrap: pretty; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; }
+  ::selection { background: var(--accent); color: var(--accent-ink); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .wrap { width: 100%; max-width: 1200px; margin-inline: auto; padding-inline: clamp(16px, 4vw, 32px); }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+  /* Nav: transparent over the hero, frosted once the page scrolls */
+  .nav { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line); background: rgb(11 11 12 / .72); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); }
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .nav { animation: nav-solid linear both; animation-timeline: scroll(); animation-range: 0 160px; }
+      @keyframes nav-solid { from { background-color: rgb(11 11 12 / 0); border-bottom-color: transparent; } }
+    }
+  }
+  .nav .wrap { height: 64px; display: flex; align-items: center; justify-content: space-between; }
+  .brand { font: italic 500 28px/1 var(--serif); letter-spacing: -.01em; }
+  .nav nav { display: flex; align-items: center; gap: 4px; }
+  .nav nav a:not(.btn) { padding: 8px 12px; font-size: 14px; color: var(--muted); transition: color .2s; }
+  .nav nav a:not(.btn):hover { color: var(--text); }
+  .nav .btn { margin-left: 8px; }
+
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 20px; border: 1px solid transparent; border-radius: 999px; font: 500 15px/1 var(--sans); white-space: nowrap; cursor: pointer; transition: background-color .2s, border-color .2s, color .2s, transform .2s var(--ease); }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-ghost { background: rgb(255 255 255 / .02); border-color: var(--line-strong); color: var(--text); }
+  .btn-ghost:hover { background: rgb(255 255 255 / .07); }
+  .btn-sm { height: 36px; padding: 0 14px; font-size: 14px; }
+  .link-btn { padding: 0; border: 0; background: none; color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Color field: soft glows plus grain, behind the hero, the portrait and the footer */
+  .field { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  .field::after { content: ""; position: absolute; inset: 0; background: var(--grain); opacity: .09; }
+  .field span { position: absolute; left: 50%; aspect-ratio: 1; border-radius: 50%; will-change: translate; }
+  .field span:nth-child(1) { top: 72%; width: 120%; background: radial-gradient(closest-side, rgb(233 121 73 / .42), transparent); translate: -78% -50%; }
+  .field span:nth-child(2) { top: 84%; width: 110%; background: radial-gradient(closest-side, rgb(107 31 51 / .8), transparent); translate: -18% -50%; }
+  .field span:nth-child(3) { top: 50%; width: 80%; background: radial-gradient(closest-side, rgb(138 43 88 / .26), transparent); translate: -50% -50%; }
+
+  /* Hero */
+  .hero { position: relative; isolation: isolate; overflow: hidden; display: grid; place-items: center; min-height: clamp(640px, 100svh, 920px); margin-top: -65px; padding-top: 65px; }
+  .hero-inner { position: relative; z-index: 1; display: grid; justify-items: center; padding-block: clamp(56px, 9vh, 96px); text-align: center; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 15px; border: 1px solid var(--line-strong); border-radius: 999px; background: rgb(255 255 255 / .04); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font-size: 13px; color: var(--muted); transition: color .2s, border-color .2s; }
+  .badge b { font-weight: 600; color: var(--text); }
+  .badge:hover { border-color: rgb(245 242 235 / .3); color: var(--text); }
+  .hero h1 { max-width: 680px; margin-top: 28px; font-size: clamp(3.2rem, 8vw, 6.6rem); line-height: .96; }
+  .lede { max-width: 42ch; margin-top: 24px; font-size: clamp(1.05rem, 1.5vw, 1.2rem); color: var(--muted); }
+  .prompt { display: flex; align-items: center; gap: 8px; width: min(560px, 100%); margin-top: 36px; padding: 7px 7px 7px 22px; border: 1px solid var(--line-strong); border-radius: 999px; background: rgb(18 18 20 / .72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 24px 60px -24px rgb(0 0 0 / .9), inset 0 1px 0 rgb(255 255 255 / .06); transition: border-color .2s; }
+  .prompt:focus-within { border-color: rgb(233 121 73 / .6); }
+  .prompt input { flex: 1; min-width: 0; height: 44px; padding: 0; border: 0; background: none; color: var(--text); font: 16px var(--sans); outline: none; }
+  .prompt input::placeholder { color: var(--subtle); }
+  .suggest { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }
+  .suggest > * { display: inline-flex; align-items: center; height: 32px; padding: 0 13px; border: 1px solid var(--line); border-radius: 999px; background: rgb(255 255 255 / .03); color: var(--muted); font-size: 13px; cursor: pointer; transition: color .2s, border-color .2s, background-color .2s; }
+  .suggest > *:hover { border-color: var(--line-strong); background: rgb(255 255 255 / .07); color: var(--text); }
+
+  /* Hero collage: live demos, scaled down, drifting with the pointer */
+  .collage { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  .tile { position: absolute; width: calc(400px * var(--s)); height: calc(320px * var(--s)); rotate: var(--rot); translate: calc(var(--mx, 0) * var(--d) * 16px) calc(var(--my, 0) * var(--d) * 12px); transition: translate .8s var(--ease); pointer-events: auto; }
+  .tile-float { position: relative; width: 100%; height: 100%; overflow: hidden; border: 1px solid var(--line-strong); border-radius: 16px; background: #0d0d0f; box-shadow: 0 30px 60px -24px rgb(0 0 0 / .95); transition: scale .4s var(--ease), border-color .3s; }
+  .tile iframe { display: block; width: 400px; height: 320px; border: 0; transform: scale(var(--s)); transform-origin: 0 0; }
+  .tile-open { position: absolute; inset: 0; border: 0; background: none; cursor: pointer; }
+  .tile-label { position: absolute; left: 10px; bottom: 10px; padding: 5px 11px; border-radius: 999px; background: rgb(11 11 12 / .85); font-size: 12px; color: var(--text); opacity: 0; translate: 0 4px; transition: opacity .2s, translate .2s; }
+  .tile:hover .tile-float, .tile:focus-within .tile-float { scale: 1.04; border-color: rgb(245 242 235 / .32); }
+  .tile:hover .tile-label, .tile:focus-within .tile-label { opacity: 1; translate: 0 0; }
+  .t1 { --s: .6; --rot: -5deg; --d: 1.2; right: calc(50% + 380px); top: 15%; }
+  .t2 { --s: .5; --rot: 4deg; --d: .8; right: calc(50% + 430px); bottom: 11%; }
+  .t3 { --s: .55; --rot: 5deg; --d: 1; left: calc(50% + 380px); top: 13%; }
+  .t4 { --s: .5; --rot: -4deg; --d: 1.4; left: calc(50% + 440px); bottom: 13%; }
+  .t5 { --s: .45; --rot: 3deg; --d: .6; right: calc(50% + 660px); top: 41%; }
+  .t6 { --s: .45; --rot: -3deg; --d: .7; left: calc(50% + 680px); top: 44%; }
+
+  /* A multiplayer-style cursor that wanders between the tiles */
+  .cursor { position: absolute; left: calc(50% + 340px); top: 40%; z-index: 2; pointer-events: none; }
+  .cursor i { display: block; width: 16px; height: 20px; background: var(--accent); clip-path: polygon(0 0, 100% 62%, 56% 66%, 40% 100%); }
+  .cursor span { display: inline-block; margin: 2px 0 0 12px; padding: 3px 9px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font: 600 12px/1.4 var(--sans); }
+
+  /* Snippets */
+  .section { padding-block: clamp(80px, 11vw, 144px); }
+  .section-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 20px 32px; margin-bottom: 36px; }
+  h2 { font-size: clamp(2.6rem, 5.4vw, 4.4rem); }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: 999px; background: transparent; color: var(--muted); font: 500 14px/1 var(--sans); cursor: pointer; transition: background-color .2s, border-color .2s, color .2s, transform .2s var(--ease); }
+  .chip span { font: 12px/1 var(--mono); color: var(--subtle); }
+  .chip:hover { color: var(--text); }
+  .chip:active { transform: scale(.96); }
+  .chip[aria-pressed="true"] { background: var(--text); border-color: var(--text); color: var(--bg); }
+  .chip[aria-pressed="true"] span { color: #57534e; }
+  .results { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin: -8px 0 24px; font-size: 15px; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+  .card { grid-column: 1 / -1; display: flex; flex-direction: column; padding: 8px; border: 1px solid var(--line); border-radius: var(--r); background: linear-gradient(180deg, var(--surface-2), var(--surface) 45%); transition: border-color .3s; }
+  .card:hover { border-color: var(--line-strong); }
+  .card iframe { display: block; width: 100%; height: 312px; border: 1px solid var(--line); border-radius: var(--r-inner); background: #0d0d0f; }
+  .card-body { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 16px 12px 10px; }
+  .card-body .btn { flex-shrink: 0; }
+  .card h3 { font-size: 18px; letter-spacing: -.02em; }
+  .desc { margin-top: 4px; font-size: 15px; color: var(--muted); }
+  .meta { margin-top: 14px; font: 12px/1.4 var(--mono); color: var(--subtle); }
+  .more { display: flex; justify-content: center; margin-top: 32px; }
+
+  /* Design notes */
+  .notes-head { max-width: 680px; margin-bottom: 44px; }
+  .notes-head p, .sub-head p { max-width: 60ch; margin-top: 16px; font-size: 17px; color: var(--muted); }
+  .ab-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .ab-grid .ab:nth-child(even) { --i: 1; }
+  .ab { display: flex; flex-direction: column; gap: 16px; padding: 20px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+  .ab header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .ab h3 { font-size: 18px; letter-spacing: -.02em; }
+  .ab > p { font-size: 15px; color: var(--muted); }
+  .rule { font: 12px/1.4 var(--mono); color: var(--subtle); white-space: nowrap; }
+  .ab-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .ab-case { display: flex; flex-direction: column; gap: 8px; }
+  .ab-case figcaption { font: 12px/1.4 var(--mono); color: var(--subtle); }
+  .ab-case.good figcaption { color: var(--accent); }
+  .ab-stage { flex: 1; display: grid; place-items: center; min-height: 150px; padding: 16px; border: 1px solid var(--line); border-radius: var(--r-inner); background: var(--canvas); text-align: center; }
+
+  /* A/B example pieces: pictures of UI, not live controls */
+  .ex-text { font-size: 15px; line-height: 1.4; }
+  .ex-ratio { display: block; margin-top: 10px; font: 12px/1.4 var(--mono); color: var(--subtle); }
+  .ex-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+  .ex-btn { display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border: 1px solid transparent; border-radius: 999px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .ex-btn.solid { background: var(--accent); color: var(--accent-ink); }
+  .ex-btn.ghost { border-color: var(--line-strong); color: var(--text); }
+  .ex-btn.plain { color: var(--muted); }
+  .ex-form, .ex-field { display: grid; width: 100%; font-size: 12px; text-align: left; color: var(--muted); }
+  .ex-form.even { gap: 12px; }
+  .ex-form.grouped { gap: 20px; }
+  .ex-form.grouped > div { display: grid; gap: 5px; }
+  .ex-field { gap: 6px; }
+  .ex-input { display: flex; align-items: center; height: 28px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--text); }
+  .ex-input.error { border-color: var(--accent); }
+  .ex-msg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--accent); }
+  .ex-msg b { display: grid; place-items: center; flex-shrink: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 10px; }
+  .ex-type { display: grid; gap: 6px; width: 100%; line-height: 1.15; text-align: left; }
+  .ex-type.bad span { font-weight: 600; }
+  .ex-type.bad span:nth-child(1) { font-size: 18px; }
+  .ex-type.bad span:nth-child(2) { font-size: 17px; }
+  .ex-type.bad span:nth-child(3) { font-size: 15px; }
+  .ex-type.bad span:nth-child(4) { font-size: 14px; }
+  .ex-type.good span:nth-child(1) { font-size: 28px; font-weight: 600; letter-spacing: -.03em; }
+  .ex-type.good span:nth-child(2) { font-size: 21px; font-weight: 500; letter-spacing: -.02em; }
+  .ex-type.good span:nth-child(3) { font-size: 16px; color: var(--muted); }
+  .ex-type.good span:nth-child(4) { font-size: 12px; color: var(--subtle); }
+  .ex-targets { display: flex; }
+  .ex-targets span { display: grid; place-items: center; border: 1px solid var(--line-strong); color: var(--text); }
+  .ex-targets.tight { gap: 2px; }
+  .ex-targets.tight span { width: 22px; height: 22px; border-radius: 6px; font-size: 12px; }
+  .ex-targets.roomy { gap: 8px; }
+  .ex-targets.roomy span { width: 44px; height: 44px; border-radius: 10px; font-size: 18px; }
+
+  /* Notes: sub-sections */
+  .sub { margin-top: clamp(80px, 10vw, 128px); }
+  .sub-head { max-width: 680px; margin-bottom: 28px; }
+  .sub-head h3 { font: 500 clamp(2.1rem, 3.8vw, 3.1rem)/1.05 var(--serif); letter-spacing: -.01em; }
+
+  /* Color */
+  .split-bar { display: flex; height: 56px; overflow: hidden; border: 1px solid var(--line-strong); border-radius: var(--r); }
+  .split-bar span:nth-child(1) { flex: 60; background: var(--surface); }
+  .split-bar span:nth-child(2) { flex: 30; background: var(--muted); }
+  .split-bar span:nth-child(3) { flex: 10; background: var(--accent); }
+  .split-legend { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 14px 0 0; padding: 0; list-style: none; font-size: 14px; color: var(--muted); }
+  .split-legend li::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 3px; background: var(--c); box-shadow: inset 0 0 0 1px var(--line-strong); }
+  .color-tools { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+  .tool { display: flex; flex-direction: column; gap: 18px; min-width: 0; padding: 24px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+  .tool h4 { margin: 0; font-size: 16px; letter-spacing: -.01em; }
+  .swatches { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .swatch-label { width: 88px; font: 12px/1.4 var(--mono); color: var(--subtle); }
+  .sw-opt { position: relative; display: grid; cursor: pointer; }
+  .sw-opt input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .sw-opt span { width: 28px; height: 28px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .15); transition: box-shadow .2s; }
+  .sw-opt input:checked + span { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text); }
+  .sw-opt input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 6px; }
+  .contrast-preview { padding: 20px 22px; border: 1px solid var(--line); border-radius: var(--r-inner); font-size: 17px; line-height: 1.4; transition: background-color .2s, color .2s; }
+  .contrast-preview b { display: block; font: 500 40px/1.1 var(--serif); }
+  .contrast-result { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
+  .contrast-result strong { font-size: 28px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .checks { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; font-size: 13px; }
+  .checks .pass { color: var(--text); }
+  .checks .fail, .checks span { color: var(--subtle); }
+  .chip-set { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip-radio { position: relative; display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; transition: background-color .2s, border-color .2s, color .2s; }
+  .chip-radio input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .chip-radio:hover { color: var(--text); }
+  .chip-radio:has(input:checked) { background: var(--text); border-color: var(--text); color: var(--bg); }
+  .chip-radio:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .harmony-body { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; }
+  .harmony-body > div:last-child { flex: 1; min-width: 180px; }
+  .wheel-wrap { position: relative; flex-shrink: 0; width: 168px; height: 168px; }
+  .wheel { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(hsl(0 78% 60%), hsl(60 78% 60%), hsl(120 78% 60%), hsl(180 78% 60%), hsl(240 78% 60%), hsl(300 78% 60%), hsl(360 78% 60%)); -webkit-mask: radial-gradient(closest-side, transparent 66%, #000 67%); mask: radial-gradient(closest-side, transparent 66%, #000 67%); }
+  .markers span { position: absolute; top: 50%; left: 50%; width: 18px; height: 18px; margin: -9px; border: 3px solid var(--surface); border-radius: 50%; background: hsl(var(--h) 78% 60%); box-shadow: 0 0 0 1px var(--text); transform: rotate(calc(var(--h) * 1deg)) translateY(-70px) rotate(calc(var(--h) * -1deg)); transition: transform .6s var(--ease); }
+  .wheel-center { position: absolute; inset: 0; display: grid; place-content: center; font: 12px/1.4 var(--mono); color: var(--subtle); text-align: center; }
+  .harmony-swatches { display: grid; gap: 8px; margin: 0 0 12px; padding: 0; list-style: none; font: 13px var(--mono); color: var(--muted); }
+  .harmony-swatches span { display: inline-block; width: 28px; height: 16px; margin-right: 10px; border-radius: 4px; vertical-align: -3px; }
+  #harmony-note { font-size: 14px; color: var(--muted); }
+  .harmony-why { font-size: 14px; color: var(--subtle); }
+
+  /* Finished, not just done */
+  .finished { display: grid; grid-template-columns: 5fr 6fr; gap: clamp(32px, 5vw, 72px); align-items: start; }
+  .finished .sub-head { margin-bottom: 0; }
+  .state-picker { margin-top: 24px; }
+  .state-note { margin-top: 20px; padding-left: 14px; border-left: 2px solid var(--accent); font-size: 15px; color: var(--text); }
+  .member-card { overflow: hidden; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+  .member-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 62px; padding: 0 20px; border-bottom: 1px solid var(--line); }
+  .members { display: grid; margin: 0; padding: 8px; list-style: none; }
+  .members li { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 10px 12px; }
+  .avatar { display: grid; place-items: center; flex-shrink: 0; width: 36px; height: 36px; border: 1px solid var(--line-strong); border-radius: 50%; background: var(--surface-2); font-size: 12px; font-weight: 600; color: var(--muted); }
+  .members li:first-child .avatar { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+  .who { display: grid; flex: 1; min-width: 0; }
+  .who > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .who b { font-weight: 500; }
+  .who span { font-size: 13px; color: var(--subtle); }
+  .role { flex-shrink: 0; font: 12px var(--mono); color: var(--subtle); }
+  .more-members { justify-content: center; font-size: 13px; color: var(--subtle); }
+  .member-empty, .member-error { display: grid; justify-items: center; gap: 8px; padding: 40px 24px; text-align: center; }
+  .member-empty p, .member-error p { max-width: 34ch; font-size: 14px; color: var(--muted); }
+  .member-empty .ex-btn, .member-error .ex-btn { margin-top: 8px; }
+  .skeleton .avatar, .skeleton .line { border: 0; background: linear-gradient(90deg, #1f1f23 30%, #2a2a2f 50%, #1f1f23 70%) 0 0 / 300% 100%; }
+  .skeleton .line { display: block; height: 10px; border-radius: 5px; }
+  .skeleton .line + .line { margin-top: 8px; }
+
+  /* Tokens */
+  .tokens .sub-head .btn { margin-top: 22px; }
+  .token-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--r); background: var(--line); }
+  .token-list div { display: grid; gap: 6px; min-width: 0; padding: 16px 18px; background: var(--surface); }
+  .token-list dt { font: 13px var(--mono); color: var(--text); }
+  .token-list dd { display: flex; align-items: center; gap: 8px; min-width: 0; font: 12px/1.5 var(--mono); color: var(--subtle); overflow-wrap: anywhere; }
+  .swatch { flex-shrink: 0; width: 14px; height: 14px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .15); }
+
+  /* About */
+  .about { display: grid; grid-template-columns: 5fr 7fr; gap: clamp(32px, 6vw, 96px); align-items: center; }
+  .portrait { position: relative; isolation: isolate; display: grid; place-items: center; aspect-ratio: 4 / 5; overflow: hidden; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+  .portrait .mono { font: italic 500 clamp(9rem, 20vw, 15rem)/1 var(--serif); }
+  .portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .about h2 { font-size: clamp(2.4rem, 4.6vw, 3.8rem); }
+  .about-lead { margin-top: 22px; font-size: clamp(1.2rem, 1.9vw, 1.5rem); line-height: 1.5; letter-spacing: -.01em; }
+  .about-lead span { color: var(--subtle); }
+  .facts { display: grid; gap: 14px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line); }
+  .facts div { display: grid; grid-template-columns: 120px 1fr; gap: 16px; }
+  .facts dt { font: 13px/1.6 var(--mono); color: var(--subtle); }
+  .facts dd { color: var(--muted); }
+
+  /* Footer: a closing band in the hero's colors */
+  .footer { position: relative; isolation: isolate; overflow: hidden; border-top: 1px solid var(--line); }
+  .footer .field span:nth-child(1) { top: 110%; }
+  .footer .field span:nth-child(2) { top: 118%; }
+  .footer .field span:nth-child(3) { top: 90%; }
+  .footer-cta { display: grid; justify-items: center; gap: 30px; padding-block: clamp(96px, 14vw, 168px) clamp(72px, 9vw, 112px); text-align: center; }
+  .footer-cta h2 { max-width: 11em; font-size: clamp(2.8rem, 6.4vw, 5.4rem); line-height: 1.02; }
+  .footer-cta .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+  .footer-base { display: flex; justify-content: space-between; gap: 16px; padding-block: 22px 32px; border-top: 1px solid var(--line); font-size: 14px; color: var(--subtle); }
+  .footer-base a { transition: color .2s; }
+  .footer-base a:hover { color: var(--text); }
+
+  /* Code viewer */
+  .viewer { width: min(1080px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface); color: var(--text); overflow: hidden; }
+  .viewer[open] { display: flex; flex-direction: column; }
+  .viewer::backdrop { background: rgb(5 5 6 / .72); backdrop-filter: blur(6px); }
+  .viewer-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 14px 14px 24px; border-bottom: 1px solid var(--line); }
+  .viewer-head p { font: 12px/1.4 var(--mono); color: var(--subtle); }
+  .viewer-head h2 { font: 600 20px/1.3 var(--sans); letter-spacing: -.02em; }
+  .viewer-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 5fr 7fr; grid-template-rows: minmax(0, 1fr); }
+  .viewer-body iframe { width: 100%; height: 100%; min-height: min(440px, 60dvh); border: 0; border-right: 1px solid var(--line); background: #0d0d0f; }
+  .viewer-code { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .viewer-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px 12px 16px; border-bottom: 1px solid var(--line); }
+  .seg { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); }
+  .seg button { height: 30px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--subtle); font: 500 12px/1 var(--mono); cursor: pointer; transition: background-color .2s, color .2s; }
+  .seg button:hover { color: var(--text); }
+  .seg button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-strong); }
+  #copy { min-width: 88px; }
+  .viewer pre { flex: 1; min-height: 0; margin: 0; padding: 20px 24px; overflow: auto; color: #c7c7cf; font: 13px/1.7 var(--mono); tab-size: 2; scrollbar-width: thin; scrollbar-color: #3f3f46 transparent; }
+
+  /* Syntax colors (Prism tokens): neutrals plus the accent family */
+  .token.comment { color: #7c7c86; font-style: italic; }
+  .token.punctuation, .token.operator { color: #8b8b94; }
+  .token.keyword, .token.tag, .token.atrule, .token.important, .token.boolean { color: var(--accent); }
+  .token.string, .token.attr-value, .token.url, .token.regex { color: #e8c9a0; }
+  .token.function, .token.selector, .token.class-name { color: #f4f4f5; }
+  .token.number, .token.unit, .token.hexcode { color: #f2a07e; }
+  .token.property, .token.attr-name, .token.builtin { color: #c4c4cc; }
+
+  /* Motion */
+  @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  @keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+  @keyframes drift-a { to { translate: -58% -58%; } }
+  @keyframes drift-b { to { translate: -34% -42%; } }
+  @keyframes drift-c { to { translate: -44% -56%; scale: 1.15; } }
+  @keyframes bob { to { translate: 0 -10px; } }
+  @keyframes roam {
+    0%, 12% { translate: 0 0; }
+    45%, 58% { translate: 110px 160px; }
+    88%, 100% { translate: 0 0; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .rise { animation: rise .9s var(--ease) both; animation-delay: calc(var(--i, 0) * 90ms + 80ms); }
+    .field span:nth-child(1) { animation: drift-a 24s ease-in-out infinite alternate; }
+    .field span:nth-child(2) { animation: drift-b 30s ease-in-out infinite alternate; }
+    .field span:nth-child(3) { animation: drift-c 20s ease-in-out infinite alternate; }
+    .tile-float { animation: bob 7s ease-in-out infinite alternate; animation-delay: calc(var(--n, 0) * -1.3s); }
+    .cursor { animation: roam 14s ease-in-out infinite; }
+    .skeleton .avatar, .skeleton .line { animation: shimmer 1.2s linear infinite; }
+    .viewer, .viewer::backdrop { opacity: 0; transition: opacity .3s var(--ease), transform .4s var(--ease), overlay .4s allow-discrete, display .4s allow-discrete; }
+    .viewer { transform: translateY(16px) scale(.98); }
+    .viewer[open], .viewer[open]::backdrop { opacity: 1; }
+    .viewer[open] { transform: none; }
+    @starting-style {
+      .viewer[open], .viewer[open]::backdrop { opacity: 0; }
+      .viewer[open] { transform: translateY(16px) scale(.98); }
+    }
+  }
+  .reveal-on .reveal:not(.in) { opacity: 0; }
+  .reveal-on .reveal.in { animation: rise .8s var(--ease) both; animation-delay: calc(var(--i, 0) * 80ms); }
+
+  /* Layout breakpoints */
+  @media (min-width: 900px) {
+    .card[data-span="7"] { grid-column: span 7; }
+    .card[data-span="5"] { grid-column: span 5; }
+  }
+  @media (max-width: 1439px) { .t5, .t6 { display: none; } }
+  @media (max-width: 999px) { .collage, .cursor { display: none; } }
+  @media (max-width: 899px) {
+    .about, .ab-grid, .color-tools, .finished { grid-template-columns: 1fr; }
+    .portrait { max-width: 320px; }
+    .token-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 800px) {
+    .viewer-body { grid-template-columns: 1fr; grid-template-rows: 300px minmax(0, 1fr); }
+    .viewer-body iframe { min-height: 0; border-right: 0; border-bottom: 1px solid var(--line); }
+  }
+  @media (max-width: 520px) {
+    .nav nav a:not(.btn) { padding-inline: 6px; font-size: 13px; }
+    .nav .btn { margin-left: 4px; }
+    .brand { font-size: 24px; }
+    .prompt { padding-left: 18px; }
+    .prompt .btn { padding: 0 16px; }
+    .card-body { flex-direction: column; }
+    .facts div { grid-template-columns: 1fr; gap: 2px; }
+    .ab-pair, .token-list { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top">Jakob</a>
+    <nav aria-label="Primary">
+      <a href="#snippets">Snippets</a>
+      <a href="#notes">Notes</a>
+      <a href="#about">About</a>
+      <a class="btn btn-ghost btn-sm" href="mailto:you@example.com">Email me</a> <!-- TODO: your email -->
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="top">
+    <div class="field" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div class="collage" id="collage"></div>
+    <div class="hero-inner wrap">
+      <a class="badge rise" style="--i:0" href="#snippets"><b id="badge-count">42</b> live snippets to play with</a>
+      <h1 class="rise" style="--i:1">Interfaces that feel <em>finished</em>.</h1>
+      <p class="lede rise" style="--i:2">I'm Jakob. I design and build interfaces, including the empty, loading and error states that mockups skip.</p>
+      <form class="prompt rise" style="--i:3" id="prompt" role="search">
+        <label class="sr-only" for="prompt-input">Search the snippets</label>
+        <input id="prompt-input" type="search" autocomplete="off" placeholder="Search the snippets">
+        <button class="btn btn-primary" type="submit">Search</button>
+      </form>
+      <div class="suggest rise" style="--i:4">
+        <button type="button" data-q="tilt card">Tilt card</button>
+        <button type="button" data-q="loading">Loading states</button>
+        <button type="button" data-q="command palette">Command palette</button>
+        <a href="#notes">Design notes</a>
+      </div>
+    </div>
+    <div class="cursor" aria-hidden="true"><i></i><span>Jakob</span></div>
+  </section>
+
+  <section class="section wrap" id="snippets">
+    <div class="section-head reveal">
+      <h2>Every demo is <em>live</em>.</h2>
+      <div class="filters" id="filters" role="group" aria-label="Filter by category"></div>
+    </div>
+    <div class="results" id="results" role="status" hidden>
+      <span id="results-text"></span>
+      <button class="link-btn" id="clear-query">Clear search</button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="more" hidden><button class="btn btn-ghost" id="more">Show all</button></div>
+  </section>
+
+  <section class="section wrap" id="notes">
+    <div class="notes-head reveal">
+      <h2>What works, and <em>why</em>.</h2>
+      <p>The same element, built two ways. The difference is rarely taste; usually it's something you can measure.</p>
+    </div>
+
+    <div class="ab-grid">
+      <article class="ab reveal">
+        <header><h3>Contrast</h3><span class="rule">4.5:1 for body text</span></header>
+        <div class="ab-pair">
+          <figure class="ab-case">
+            <figcaption>✕ Doesn't work</figcaption>
+            <div class="ab-stage">
+              <p class="ex-text" style="color:#55555e">Your changes were saved.<span class="ex-ratio" data-fg="#55555e" data-bg="#0d0d0f"></span></p>
+            </div>
+          </figure>
+          <figure class="ab-case good">
+            <figcaption>✓ Works</figcaption>
+            <div class="ab-stage">
+              <p class="ex-text" style="color:#a1a1aa">Your changes were saved.<span class="ex-ratio" data-fg="#a1a1aa" data-bg="#0d0d0f"></span></p>
+            </div>
+          </figure>
+        </div>
+        <p>Muted text is a hierarchy tool. Below 4.5:1 against its background it stops being quiet and starts being unreadable.</p>
+      </article>
+
+      <article class="ab reveal">
+        <header><h3>Hierarchy</h3><span class="rule">1 primary action</span></header>
+        <div class="ab-pair">
+          <figure class="ab-case">
+            <figcaption>✕ Doesn't work</figcaption>
+            <div class="ab-stage" aria-hidden="true">
+              <div class="ex-row"><span class="ex-btn solid">Publish</span><span class="ex-btn solid">Preview</span><span class="ex-btn solid">Discard</span></div>
+            </div>
+          </figure>
+          <figure class="ab-case good">
+            <figcaption>✓ Works</figcaption>
+            <div class="ab-stage" aria-hidden="true">
+              <div class="ex-row"><span class="ex-btn solid">Publish</span><span class="ex-btn ghost">Preview</span><span class="ex-btn plain">Discard</span></div>
+            </div>
+          </figure>
+        </div>
+        <p>When three buttons shout, people stop and compare. Give one action the weight and step the others down.</p>
+      </article>
+
+      <article class="ab reveal">
+        <header><h3>Proximity</h3><span class="rule">closer means related</span></header>
+        <div class="ab-pair">
+          <figure class="ab-case">
+            <figcaption>✕ Doesn't work</figcaption>
+            <div class="ab-stage" aria-hidden="true">
+              <div class="ex-form even"><span>Email</span><span class="ex-input"></span><span>Password</span><span class="ex-input"></span></div>
+            </div>
+          </figure>
+          <figure class="ab-case good">
+            <figcaption>✓ Works</figcaption>
+            <div class="ab-stage" aria-hidden="true">
+              <div class="ex-form grouped"><div><span>Email</span><span class="ex-input"></span></div><div><span>Password</span><span class="ex-input"></span></div></div>
+            </div>
+          </figure>
+        </div>
+        <p>Spacing groups things before borders do. A label has to sit closer to its own field than to the one above it.</p>
+      </article>
+
+      <article class="ab reveal">
+        <header><h3>Type scale</h3><span class="rule">one ratio, 1.333</span></header>
+        <div class="ab-pair">
+          <figure class="ab-case">
+            <figcaption>✕ Doesn't work</figcaption>
+            <div class="ab-stage" aria-hidden="true">
+              <div class="ex-type bad"><span>Heading</span><span>Subheading</span><span>Body text</span><span>Caption</span></div>
+            </div>
+          </figure>
+          <figure class="ab-case good">
+            <figcaption>✓ Works</figcaption>
+            <div class="ab-stage" aria-hidden="true">
+              <div class="ex-type good"><span>Heading</span><span>Subheading</span><span>Body text</span><span>Caption</span></div>
+            </div>
+          </figure>
+        </div>
+        <p>Sizes one pixel apart read as mistakes, not hierarchy. Take every size from one scale and let weight and color do the rest.</p>
+      </article>
+
+      <article class="ab reveal">
+        <header><h3>Not color alone</h3><span class="rule">color plus words</span></header>
+        <div class="ab-pair">
+          <figure class="ab-case">
+            <figcaption>✕ Doesn't work</figcaption>
+            <div class="ab-stage" aria-hidden="true">
+              <div class="ex-field"><span>Email</span><span class="ex-input error">name@</span></div>
+            </div>
+          </figure>
+          <figure class="ab-case good">
+            <figcaption>✓ Works</figcaption>
+            <div class="ab-stage" aria-hidden="true">
+              <div class="ex-field"><span>Email</span><span class="ex-input error">name@</span><span class="ex-msg"><b>!</b>Add the part after the @</span></div>
+            </div>
+          </figure>
+        </div>
+        <p>About 1 in 12 men has some form of color blindness. Pair color with words or a shape, and say how to fix the problem.</p>
+      </article>
+
+      <article class="ab reveal">
+        <header><h3>Touch targets</h3><span class="rule">44 px on touch</span></header>
+        <div class="ab-pair">
+          <figure class="ab-case">
+            <figcaption>✕ Doesn't work</figcaption>
+            <div class="ab-stage" aria-hidden="true">
+              <div class="ex-targets tight"><span>+</span><span>−</span><span>×</span></div>
+            </div>
+          </figure>
+          <figure class="ab-case good">
+            <figcaption>✓ Works</figcaption>
+            <div class="ab-stage" aria-hidden="true">
+              <div class="ex-targets roomy"><span>+</span><span>−</span><span>×</span></div>
+            </div>
+          </figure>
+        </div>
+        <p>Apple recommends 44 by 44 points for anything tappable, and WCAG 2.2 sets 24 px as the floor. Small, tight targets cause mis-taps.</p>
+      </article>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head reveal">
+        <h3>Color, <em>on purpose</em>.</h3>
+        <p>This page runs on neutrals and a single accent, split roughly 60, 30 and 10. The accent means something because it's rare.</p>
+      </div>
+      <div class="reveal">
+        <div class="split-bar" role="img" aria-label="Color split: 60 percent background and surfaces, 30 percent text and lines, 10 percent accent"><span></span><span></span><span></span></div>
+        <ul class="split-legend">
+          <li style="--c: var(--surface)">60% background and surfaces</li>
+          <li style="--c: var(--muted)">30% text and lines</li>
+          <li style="--c: var(--accent)">10% accent, only where you should act</li>
+        </ul>
+      </div>
+      <div class="color-tools">
+        <div class="tool reveal" id="contrast">
+          <h4>Contrast checker</h4>
+          <div class="swatches" role="radiogroup" aria-label="Text color">
+            <span class="swatch-label">Text</span>
+            <label class="sw-opt"><input type="radio" name="fg" value="#f5f2eb" aria-label="Text token, #f5f2eb"><span style="--c:#f5f2eb"></span></label>
+            <label class="sw-opt"><input type="radio" name="fg" value="#a1a1aa" aria-label="Muted token, #a1a1aa" checked><span style="--c:#a1a1aa"></span></label>
+            <label class="sw-opt"><input type="radio" name="fg" value="#85858f" aria-label="Subtle token, #85858f"><span style="--c:#85858f"></span></label>
+            <label class="sw-opt"><input type="radio" name="fg" value="#55555e" aria-label="Too dim, #55555e"><span style="--c:#55555e"></span></label>
+            <label class="sw-opt"><input type="radio" name="fg" value="#e97949" aria-label="Accent token, #e97949"><span style="--c:#e97949"></span></label>
+            <label class="sw-opt"><input type="radio" name="fg" value="#0b0b0c" aria-label="Ink, #0b0b0c"><span style="--c:#0b0b0c"></span></label>
+          </div>
+          <div class="swatches" role="radiogroup" aria-label="Background color">
+            <span class="swatch-label">Background</span>
+            <label class="sw-opt"><input type="radio" name="bg" value="#0b0b0c" aria-label="Background token, #0b0b0c"><span style="--c:#0b0b0c"></span></label>
+            <label class="sw-opt"><input type="radio" name="bg" value="#121214" aria-label="Surface token, #121214" checked><span style="--c:#121214"></span></label>
+            <label class="sw-opt"><input type="radio" name="bg" value="#1a1a1d" aria-label="Surface 2 token, #1a1a1d"><span style="--c:#1a1a1d"></span></label>
+            <label class="sw-opt"><input type="radio" name="bg" value="#e97949" aria-label="Accent token, #e97949"><span style="--c:#e97949"></span></label>
+            <label class="sw-opt"><input type="radio" name="bg" value="#f5f2eb" aria-label="Light, #f5f2eb"><span style="--c:#f5f2eb"></span></label>
+          </div>
+          <div class="contrast-preview" id="contrast-preview"><b>Aa</b>Body text at 17 pixels. Can you read this comfortably?</div>
+          <div class="contrast-result">
+            <strong id="contrast-ratio"></strong>
+            <ul class="checks" id="contrast-checks"></ul>
+          </div>
+        </div>
+        <div class="tool reveal" id="harmony">
+          <h4>Harmonies from the accent</h4>
+          <div class="chip-set" role="radiogroup" aria-label="Harmony">
+            <label class="chip-radio"><input type="radio" name="harmony" value="complementary" checked>Complementary</label>
+            <label class="chip-radio"><input type="radio" name="harmony" value="analogous">Analogous</label>
+            <label class="chip-radio"><input type="radio" name="harmony" value="triadic">Triadic</label>
+          </div>
+          <div class="harmony-body">
+            <div class="wheel-wrap" aria-hidden="true">
+              <div class="wheel"></div>
+              <div class="markers"><span></span><span></span><span></span></div>
+              <span class="wheel-center">accent<br>18°</span>
+            </div>
+            <div>
+              <ul class="harmony-swatches" id="harmony-swatches"></ul>
+              <p id="harmony-note"></p>
+            </div>
+          </div>
+          <p class="harmony-why">This site uses none of them on purpose. One accent on neutral gray keeps attention on the work, and orange always means “act here”.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub finished">
+      <div class="sub-head reveal">
+        <h3>Finished, not just <em>done</em>.</h3>
+        <p>A screen is done when the happy path works. It's finished when every state is designed: empty, loading, error, and the name that's three times longer than in the mockup.</p>
+        <div class="chip-set state-picker" role="radiogroup" aria-label="Component state" id="states">
+          <label class="chip-radio"><input type="radio" name="state" value="default" checked>Default</label>
+          <label class="chip-radio"><input type="radio" name="state" value="empty">Empty</label>
+          <label class="chip-radio"><input type="radio" name="state" value="loading">Loading</label>
+          <label class="chip-radio"><input type="radio" name="state" value="error">Error</label>
+          <label class="chip-radio"><input type="radio" name="state" value="long">Long content</label>
+        </div>
+        <p class="state-note" id="state-note">Default: real names and roles, and one clear primary action.</p>
+      </div>
+      <div class="member-card reveal" aria-live="polite">
+        <div class="member-head"><strong>Team members</strong><span class="ex-btn solid" id="invite">Invite</span></div>
+        <ul class="members" data-view="default">
+          <li><span class="avatar">NZ</span><span class="who"><b>Nika Zupan</b><span>Product design</span></span><span class="role">Owner</span></li>
+          <li><span class="avatar">LH</span><span class="who"><b>Luka Horvat</b><span>Engineering</span></span><span class="role">Editor</span></li>
+          <li><span class="avatar">MK</span><span class="who"><b>Maja Kos</b><span>Research</span></span><span class="role">Viewer</span></li>
+        </ul>
+        <div class="member-empty" data-view="empty" hidden>
+          <strong>No members yet</strong>
+          <p>Invite the people you plan and ship with. They'll see everything in this workspace.</p>
+          <span class="ex-btn solid">Invite teammates</span>
+        </div>
+        <ul class="members skeleton" data-view="loading" aria-label="Loading members" hidden>
+          <li><span class="avatar"></span><span class="who"><span class="line" style="width:55%"></span><span class="line" style="width:35%"></span></span></li>
+          <li><span class="avatar"></span><span class="who"><span class="line" style="width:45%"></span><span class="line" style="width:30%"></span></span></li>
+          <li><span class="avatar"></span><span class="who"><span class="line" style="width:60%"></span><span class="line" style="width:25%"></span></span></li>
+        </ul>
+        <div class="member-error" data-view="error" hidden>
+          <strong>Couldn't load members</strong>
+          <p>Check your connection and try again. Nothing you changed was lost.</p>
+          <span class="ex-btn ghost">Try again</span>
+        </div>
+        <ul class="members" data-view="long" hidden>
+          <li><span class="avatar">MS</span><span class="who"><b title="Maximiliana Stefanija Kovačič Hohenberger">Maximiliana Stefanija Kovačič Hohenberger</b><span title="Senior product design lead, platform and growth">Senior product design lead, platform and growth</span></span><span class="role">Owner</span></li>
+          <li><span class="avatar">LH</span><span class="who"><b>Luka Horvat</b><span>Engineering</span></span><span class="role">Editor</span></li>
+          <li class="more-members">and 24 more</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sub tokens">
+      <div class="sub-head reveal">
+        <h3>Tokens, <em>not guesses</em>.</h3>
+        <p>The core values behind this page. Developers build from the tokens instead of measuring a mockup, and a change in one place lands everywhere.</p>
+        <button class="btn btn-ghost btn-sm" id="copy-tokens">Copy as CSS</button>
+      </div>
+      <dl class="token-list reveal" id="token-list"></dl>
+    </div>
+  </section>
+
+  <section class="section wrap about" id="about">
+    <figure class="portrait reveal">
+      <div class="field" aria-hidden="true"><span></span><span></span><span></span></div>
+      <!-- TODO: swap the letter for your photo: <img src="me.jpg" alt="Jakob"> -->
+      <span class="mono" aria-hidden="true">J</span>
+    </figure>
+    <div class="reveal" style="--i:1">
+      <h2>A designer who <em>builds</em>.</h2>
+      <!-- TODO: your story: what you're into, what you're learning, what you want to work on -->
+      <p class="about-lead">I build small, reusable interface pieces in JavaScript: buttons, card systems and the interactions around them. <span>This page is where I collect them.</span></p>
+      <dl class="facts">
+        <div><dt>Focus</dt><dd>Buttons, card systems, micro-interactions</dd></div>
+        <div><dt>Tools</dt><dd>JavaScript, HTML, CSS</dd></div>
+        <div><dt>Currently</dt><dd>Building and collecting new snippets</dd></div>
+      </dl>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="field" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div class="wrap footer-cta reveal">
+    <h2>Let's finish something <em>together</em>.</h2>
+    <div class="actions">
+      <a class="btn btn-primary" href="mailto:you@example.com">Email me</a> <!-- TODO: your email -->
+      <a class="btn btn-ghost" href="https://github.com/">GitHub</a> <!-- TODO: your GitHub profile URL -->
+    </div>
+  </div>
+  <div class="wrap footer-base">
+    <span>© 2026 Jakob</span>
+    <a href="#top">Back to top</a>
+  </div>
+</footer>
+
+<dialog class="viewer" id="viewer" aria-labelledby="viewer-title">
+  <header class="viewer-head">
+    <div>
+      <p id="viewer-cat"></p>
+      <h2 id="viewer-title"></h2>
+    </div>
+    <button class="btn btn-ghost btn-sm" data-close>Close</button>
+  </header>
+  <div class="viewer-body">
+    <iframe id="viewer-demo" title="Live demo" sandbox="allow-scripts" srcdoc="<style>:root{color-scheme:dark}</style>"></iframe>
+    <div class="viewer-code">
+      <div class="viewer-bar">
+        <div class="seg" role="group" aria-label="Show code for">
+          <button data-k="js" aria-pressed="true">JS</button>
+          <button data-k="html" aria-pressed="false">HTML</button>
+          <button data-k="css" aria-pressed="false">CSS</button>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="copy">Copy</button>
+      </div>
+      <pre><code id="viewer-code"></code></pre>
+    </div>
+  </div>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/prism.min.js" data-manual defer></script>
+<script>
+// Your snippets. Each one renders as a live, sandboxed demo; its code opens in a viewer.
+// The hero collage shows the titles listed in FEATURED, further down in this script.
+// Write code between code` and `. Backslashes work as typed; put a backslash before any ` or ${.
+const snippets = [
+  {
+    title: "Tilt card",
+    category: "Cards",
+    desc: "3D tilt with a glare that follows the pointer.",
+    html: code`
+      <div class="tilt">
+        <h3>Tilt card</h3>
+        <p>Move your pointer over me.</p>
+      </div>`,
+    css: code`
+      .tilt {
+        position: relative;
+        box-sizing: border-box;
+        width: 220px;
+        height: 280px;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        border: 1px solid #ffffff1f;
+        border-radius: 20px;
+        background: linear-gradient(160deg, #2a2a2f, #131315);
+        color: #ededef;
+        overflow: hidden;
+        transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+        transition: transform .2s ease-out;
+      }
+      .tilt::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), #e9794959, transparent 60%);
+        opacity: var(--glare, 0);
+        transition: opacity .3s;
+      }
+      .tilt > * { position: relative; }
+      .tilt h3 { margin: 0 0 4px; font-size: 22px; }
+      .tilt p { margin: 0; color: #a1a1aa; }`,
+    js: code`
+      const card = document.querySelector(".tilt");
+
+      card.addEventListener("pointermove", e => {
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width;
+        const y = (e.clientY - r.top) / r.height;
+        card.style.setProperty("--ry", (x - 0.5) * 16 + "deg");
+        card.style.setProperty("--rx", (0.5 - y) * 16 + "deg");
+        card.style.setProperty("--gx", x * 100 + "%");
+        card.style.setProperty("--gy", y * 100 + "%");
+        card.style.setProperty("--glare", 1);
+      });
+
+      card.addEventListener("pointerleave", () => {
+        ["--rx", "--ry", "--glare"].forEach(p => card.style.removeProperty(p));
+      });`
+  },
+  {
+    title: "Ripple button",
+    category: "Buttons",
+    desc: "A ripple that spreads from the exact point you press.",
+    html: code`
+      <button class="ripple">Press me</button>`,
+    css: code`
+      .ripple {
+        position: relative;
+        overflow: hidden;
+        padding: 14px 30px;
+        border: 0;
+        border-radius: 999px;
+        background: #e97949;
+        color: #0a0a0b;
+        font: 600 15px system-ui, sans-serif;
+        cursor: pointer;
+        transition: transform .15s;
+      }
+      .ripple:active { transform: scale(.97); }
+      .ripple span {
+        position: absolute;
+        border-radius: 50%;
+        background: #ffffff80;
+        transform: scale(0);
+        animation: ripple .6s ease-out;
+        pointer-events: none;
+      }
+      @keyframes ripple { to { transform: scale(4); opacity: 0; } }`,
+    js: code`
+      document.querySelector(".ripple").addEventListener("pointerdown", e => {
+        const btn = e.currentTarget;
+        const r = btn.getBoundingClientRect();
+        const size = Math.max(r.width, r.height);
+        const wave = document.createElement("span");
+        wave.style.width = wave.style.height = size + "px";
+        wave.style.left = e.clientX - r.left - size / 2 + "px";
+        wave.style.top = e.clientY - r.top - size / 2 + "px";
+        btn.appendChild(wave);
+        wave.addEventListener("animationend", () => wave.remove());
+      });`
+  },
+  {
+    title: "Spotlight cards",
+    category: "Cards",
+    desc: "Borders light up near the pointer. One listener drives every card.",
+    html: code`
+      <div class="spots">
+        <div class="spot">
+          <h3>Spotlight</h3>
+          <p>Move your pointer between the cards.</p>
+        </div>
+        <div class="spot">
+          <h3>Border glow</h3>
+          <p>The light follows you from card to card.</p>
+        </div>
+      </div>`,
+    css: code`
+      .spots {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 150px));
+        gap: 12px;
+      }
+      .spot {
+        --x: -999px;
+        --y: -999px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        min-height: 180px;
+        padding: 18px;
+        border-radius: 16px;
+        background: radial-gradient(180px circle at var(--x) var(--y), #e97949, transparent 70%), #ffffff1a;
+      }
+      .spot::before {
+        content: "";
+        position: absolute;
+        inset: 1px;
+        border-radius: 15px;
+        background: radial-gradient(260px circle at var(--x) var(--y), #e979491f, transparent 60%), #141416;
+      }
+      .spot > * { position: relative; }
+      .spot h3 { margin: 0 0 6px; font-size: 16px; }
+      .spot p { margin: 0; color: #a1a1aa; font-size: 13px; line-height: 1.45; }`,
+    js: code`
+      const cards = document.querySelectorAll(".spot");
+
+      document.addEventListener("pointermove", e => {
+        cards.forEach(card => {
+          const r = card.getBoundingClientRect();
+          card.style.setProperty("--x", e.clientX - r.left + "px");
+          card.style.setProperty("--y", e.clientY - r.top + "px");
+        });
+      });
+
+      // The pointer left the page: park the light off the cards.
+      window.addEventListener("pointerout", e => {
+        if (e.relatedTarget) return;
+        cards.forEach(card => {
+          card.style.removeProperty("--x");
+          card.style.removeProperty("--y");
+        });
+      });`
+  },
+  {
+    title: "Segmented control",
+    category: "Inputs",
+    desc: "A sliding pill that follows the choice. Arrow keys work too.",
+    html: code`
+      <div class="seg" role="radiogroup" aria-label="Billing period">
+        <span class="pill" aria-hidden="true"></span>
+        <button role="radio">Monthly</button>
+        <button role="radio">Yearly</button>
+        <button role="radio">Lifetime</button>
+      </div>`,
+    css: code`
+      .seg {
+        position: relative;
+        display: inline-flex;
+        padding: 4px;
+        border: 1px solid #ffffff1a;
+        border-radius: 999px;
+        background: #141416;
+      }
+      .seg button {
+        position: relative;
+        padding: 10px 18px;
+        border: 0;
+        border-radius: 999px;
+        background: none;
+        color: #a1a1aa;
+        font: 500 14px system-ui, sans-serif;
+        cursor: pointer;
+        transition: color .3s;
+      }
+      .seg button[aria-checked="true"] { color: #0a0a0b; }
+      .pill {
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        left: 0;
+        border-radius: 999px;
+        background: #e97949;
+      }
+      .seg.ready .pill {
+        transition: transform .45s cubic-bezier(.34, 1.3, .64, 1), width .45s cubic-bezier(.34, 1.3, .64, 1);
+      }`,
+    js: code`
+      const seg = document.querySelector(".seg");
+      const pill = seg.querySelector(".pill");
+      const options = [...seg.querySelectorAll("button")];
+
+      function select(option, focus) {
+        options.forEach(o => {
+          o.setAttribute("aria-checked", String(o === option));
+          o.tabIndex = o === option ? 0 : -1;
+        });
+        pill.style.width = option.offsetWidth + "px";
+        pill.style.transform = "translateX(" + option.offsetLeft + "px)";
+        if (focus) option.focus();
+      }
+
+      options.forEach(o => o.addEventListener("click", () => select(o)));
+
+      seg.addEventListener("keydown", e => {
+        const i = options.findIndex(o => o.tabIndex === 0);
+        const n = options.length;
+        if (e.key === "ArrowRight") select(options[(i + 1) % n], true);
+        if (e.key === "ArrowLeft") select(options[(i - 1 + n) % n], true);
+      });
+
+      select(options[0]);
+      // Turn on the slide only after the first placement, so the pill doesn't grow in on load.
+      requestAnimationFrame(() => seg.classList.add("ready"));`
+  },
+  {
+    title: "Text scramble",
+    category: "Text",
+    desc: "Letters decode one by one on hover, click or Enter.",
+    html: code`
+      <button class="scramble">Hover to decode</button>`,
+    css: code`
+      .scramble {
+        padding: 8px 12px;
+        border: 0;
+        background: none;
+        color: #ededef;
+        font: 600 26px ui-monospace, "SF Mono", Consolas, monospace;
+        cursor: pointer;
+      }
+      .scramble .dim { color: #e97949; }`,
+    js: code`
+      const el = document.querySelector(".scramble");
+      const glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%*+=?";
+      const phrases = ["Hover to decode", "Text scramble", "Tap it again"];
+      let next = 1;
+      let frame;
+
+      function scramble(to) {
+        const from = el.textContent;
+        // Every character gets its own random start and settle time.
+        const chars = [...Array(Math.max(from.length, to.length))].map((_, i) => {
+          const start = Math.floor(Math.random() * 16);
+          return { from: from[i] || "", to: to[i] || "", start, end: start + 8 + Math.floor(Math.random() * 16) };
+        });
+        const last = Math.max(...chars.map(c => c.end));
+        let tick = 0;
+        cancelAnimationFrame(frame);
+
+        (function step() {
+          el.innerHTML = chars.map(c => {
+            if (tick >= c.end) return c.to;
+            if (tick >= c.start) return '<span class="dim">' + glyphs[Math.floor(Math.random() * glyphs.length)] + "</span>";
+            return c.from;
+          }).join("");
+          if (tick++ < last) frame = requestAnimationFrame(step);
+        })();
+      }
+
+      function play() {
+        scramble(phrases[next]);
+        next = (next + 1) % phrases.length;
+      }
+
+      el.addEventListener("pointerenter", play);
+      el.addEventListener("click", play);`
+  },
+  {
+    title: "Swipe stack",
+    category: "Cards",
+    desc: "Drag the top card sideways, or focus the stack and use the arrow keys.",
+    html: code`
+      <div class="swipe" tabindex="0" role="group" aria-label="Card stack">
+        <div class="swipe-card c3">Swiped cards go to the back</div>
+        <div class="swipe-card c2">Arrow keys work too</div>
+        <div class="swipe-card c1">Drag me sideways</div>
+      </div>`,
+    css: code`
+      .swipe {
+        position: relative;
+        width: 200px;
+        height: 240px;
+        margin-bottom: 24px;
+        border-radius: 18px;
+      }
+      .swipe:focus-visible { outline: 2px solid #e97949; outline-offset: 8px; }
+      .swipe-card {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        border: 1px solid #ffffff1f;
+        border-radius: 18px;
+        font: 600 18px/1.3 system-ui, sans-serif;
+        text-align: center;
+        touch-action: none;
+        user-select: none;
+        cursor: grab;
+        transition: transform .45s cubic-bezier(.16, 1, .3, 1);
+      }
+      .swipe-card:nth-last-child(2) { transform: translateY(12px) scale(.95); }
+      .swipe-card:nth-last-child(3) { transform: translateY(24px) scale(.9); }
+      .swipe-card.dragging { transition: none; cursor: grabbing; }
+      .c1 { background: #e97949; color: #0a0a0b; }
+      .c2 { background: #27272a; color: #ededef; }
+      .c3 { background: #1c1c1f; color: #a1a1aa; }`,
+    js: code`
+      const stack = document.querySelector(".swipe");
+
+      // Throw a card off to one side, then recycle it to the bottom of the stack.
+      function fling(card, dir) {
+        card.style.transform = "translateX(" + dir * 420 + "px) rotate(" + dir * 30 + "deg)";
+        card.addEventListener("transitionend", () => {
+          card.style.transition = "none";
+          card.style.transform = "";
+          stack.prepend(card);
+          void card.offsetWidth; // apply the reset before transitions come back
+          card.style.transition = "";
+        }, { once: true });
+      }
+
+      stack.addEventListener("pointerdown", e => {
+        const card = stack.lastElementChild;
+        if (e.target !== card) return;
+        const startX = e.clientX;
+        let dx = 0;
+        card.setPointerCapture(e.pointerId);
+        card.classList.add("dragging");
+
+        const move = ev => {
+          dx = ev.clientX - startX;
+          card.style.transform = "translateX(" + dx + "px) rotate(" + dx / 12 + "deg)";
+        };
+        const end = () => {
+          card.removeEventListener("pointermove", move);
+          card.removeEventListener("pointerup", end);
+          card.removeEventListener("pointercancel", end);
+          card.classList.remove("dragging");
+          if (Math.abs(dx) > 80) fling(card, Math.sign(dx));
+          else card.style.transform = ""; // not far enough: snap back
+        };
+
+        card.addEventListener("pointermove", move);
+        card.addEventListener("pointerup", end);
+        card.addEventListener("pointercancel", end);
+      });
+
+      stack.addEventListener("keydown", e => {
+        if (e.key === "ArrowLeft") fling(stack.lastElementChild, -1);
+        if (e.key === "ArrowRight") fling(stack.lastElementChild, 1);
+      });`
+  },
+  {
+    title: "Direction-aware button",
+    category: "Buttons",
+    desc: "The fill slides in from the edge you entered and out the edge you left.",
+    html: code`
+      <button class="aware">
+        <span class="fill" aria-hidden="true"></span>
+        <span class="label">Enter from any side</span>
+      </button>`,
+    css: code`
+      .aware {
+        position: relative;
+        overflow: hidden;
+        padding: 16px 32px;
+        border: 1px solid #e97949;
+        border-radius: 999px;
+        background: none;
+        color: #ededef;
+        font: 500 15px system-ui, sans-serif;
+        cursor: pointer;
+        transition: color .3s;
+      }
+      .aware.on { color: #0a0a0b; }
+      .fill {
+        position: absolute;
+        inset: 0;
+        background: #e97949;
+        transform: translateX(-101%);
+      }
+      .label { position: relative; }`,
+    js: code`
+      const btn = document.querySelector(".aware");
+      const fill = btn.querySelector(".fill");
+      const outside = {
+        left: "translateX(-101%)",
+        right: "translateX(101%)",
+        top: "translateY(-101%)",
+        bottom: "translateY(101%)"
+      };
+
+      // Which edge of the button is the pointer closest to?
+      function edge(e) {
+        const r = btn.getBoundingClientRect();
+        const d = {
+          left: e.clientX - r.left,
+          right: r.right - e.clientX,
+          top: e.clientY - r.top,
+          bottom: r.bottom - e.clientY
+        };
+        return Object.keys(d).reduce((a, b) => (d[a] < d[b] ? a : b));
+      }
+
+      function slide(from, to) {
+        fill.animate([{ transform: from }, { transform: to }], {
+          duration: 350,
+          easing: "cubic-bezier(.16, 1, .3, 1)",
+          fill: "forwards"
+        });
+      }
+
+      btn.addEventListener("pointerenter", e => {
+        btn.classList.add("on");
+        slide(outside[edge(e)], "none");
+      });
+
+      btn.addEventListener("pointerleave", e => {
+        btn.classList.remove("on");
+        slide(getComputedStyle(fill).transform, outside[edge(e)]);
+      });`
+  },
+  {
+    title: "Toast stack",
+    category: "Feedback",
+    desc: "Toasts slide in, close on click or after three seconds. Three on screen at most.",
+    html: code`
+      <button class="toast-btn">Show a toast</button>
+      <div class="toasts" role="status"></div>`,
+    css: code`
+      .toast-btn {
+        align-self: start;
+        margin-top: 48px;
+        padding: 12px 22px;
+        border: 1px solid #ffffff2e;
+        border-radius: 999px;
+        background: #ffffff0a;
+        color: #ededef;
+        font: 500 14px system-ui, sans-serif;
+        cursor: pointer;
+      }
+      .toasts {
+        position: fixed;
+        left: 50%;
+        bottom: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 260px;
+        transform: translateX(-50%);
+      }
+      .toast {
+        position: relative;
+        overflow: hidden;
+        padding: 12px 14px;
+        border: 1px solid #ffffff1f;
+        border-radius: 12px;
+        background: #1c1c1f;
+        color: #ededef;
+        font: 14px system-ui, sans-serif;
+        cursor: pointer;
+      }
+      .toast::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 2px;
+        background: #e97949;
+        transform-origin: left;
+        animation: timer 3s linear forwards;
+      }
+      @keyframes timer { to { transform: scaleX(0); } }`,
+    js: code`
+      const list = document.querySelector(".toasts");
+      const messages = ["Saved to drafts", "Link copied", "Settings updated", "Upload complete"];
+      let count = 0;
+
+      function dismiss(toast) {
+        if (toast.classList.contains("leaving")) return;
+        toast.classList.add("leaving");
+        toast.animate(
+          [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateY(8px) scale(.96)" }],
+          { duration: 200, easing: "ease-in", fill: "forwards" }
+        ).onfinish = () => toast.remove();
+      }
+
+      document.querySelector(".toast-btn").addEventListener("click", () => {
+        const toast = document.createElement("div");
+        toast.className = "toast";
+        toast.textContent = messages[count++ % messages.length];
+        toast.addEventListener("click", () => dismiss(toast));
+        list.append(toast);
+        toast.animate(
+          [{ opacity: 0, transform: "translateY(12px) scale(.96)" }, { opacity: 1, transform: "none" }],
+          { duration: 300, easing: "cubic-bezier(.16, 1, .3, 1)" }
+        );
+        setTimeout(() => dismiss(toast), 3000);
+
+        // Keep at most three on screen.
+        const live = [...list.children].filter(t => !t.classList.contains("leaving"));
+        if (live.length > 3) dismiss(live[0]);
+      });`
+  },
+  {
+    title: "Flip card",
+    category: "Cards",
+    desc: "Flips toward the side you click. Space and Enter flip it too.",
+    html: code`
+      <button class="flip" aria-pressed="false">
+        <span class="flip-inner">
+          <span class="face front"><strong>Flip card</strong>Click the left or right half.</span>
+          <span class="face back"><strong>The back</strong>It turned toward the side you clicked.</span>
+        </span>
+      </button>`,
+    css: code`
+      .flip {
+        width: 220px;
+        height: 260px;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font: inherit;
+        perspective: 900px;
+        cursor: pointer;
+      }
+      .flip-inner {
+        position: relative;
+        display: block;
+        height: 100%;
+        transform-style: preserve-3d;
+        transition: transform .7s cubic-bezier(.3, 1.4, .5, 1);
+      }
+      .face {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 4px;
+        padding: 22px;
+        border: 1px solid #ffffff1f;
+        border-radius: 18px;
+        color: #a1a1aa;
+        font-size: 14px;
+        text-align: left;
+        backface-visibility: hidden;
+      }
+      .face strong { color: #ededef; font-size: 20px; }
+      .front { background: linear-gradient(160deg, #2a2a2f, #131315); }
+      .back { background: #e97949; color: #3b1a0c; transform: rotateY(180deg); }
+      .back strong { color: #0a0a0b; }`,
+    js: code`
+      const flip = document.querySelector(".flip");
+      const inner = flip.querySelector(".flip-inner");
+      let angle = 0;
+
+      flip.addEventListener("click", e => {
+        const r = flip.getBoundingClientRect();
+        // Keyboard presses have no pointer position (detail is 0): flip to the right.
+        const fromLeft = e.detail > 0 && e.clientX < r.left + r.width / 2;
+        angle += fromLeft ? -180 : 180;
+        inner.style.transform = "rotateY(" + angle + "deg)";
+        flip.setAttribute("aria-pressed", String(Math.abs(angle / 180) % 2 === 1));
+      });`
+  },
+  {
+    title: "Loading button",
+    category: "Buttons",
+    desc: "Idle, loading and done states in one button, with a spinner and aria-busy.",
+    html: code`
+      <button class="load" data-state="idle">
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="label" aria-live="polite">Save changes</span>
+      </button>`,
+    css: code`
+      .load {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-width: 170px;
+        height: 48px;
+        padding: 0 24px;
+        border: 0;
+        border-radius: 999px;
+        background: #e97949;
+        color: #0a0a0b;
+        font: 600 15px system-ui, sans-serif;
+        cursor: pointer;
+        transition: background-color .3s, color .3s, transform .15s;
+      }
+      .load:active { transform: scale(.97); }
+      .load[data-state="loading"] { background: #27272a; color: #ededef; cursor: progress; }
+      .load[data-state="done"] { background: #ededef; }
+      .spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #ffffff33;
+        border-top-color: #ededef;
+        border-radius: 50%;
+        animation: spin .7s linear infinite;
+      }
+      .load[data-state="loading"] .spinner { display: block; }
+      @keyframes spin { to { transform: rotate(360deg); } }`,
+    js: code`
+      const btn = document.querySelector(".load");
+      const label = btn.querySelector(".label");
+      const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+      btn.addEventListener("click", async () => {
+        if (btn.dataset.state !== "idle") return;
+
+        btn.dataset.state = "loading";
+        btn.setAttribute("aria-busy", "true");
+        label.textContent = "Saving";
+        await wait(1600); // stand-in for a real request
+
+        btn.dataset.state = "done";
+        btn.removeAttribute("aria-busy");
+        label.textContent = "Saved";
+        await wait(1800);
+
+        btn.dataset.state = "idle";
+        label.textContent = "Save changes";
+      });`
+  },
+  {
+    title: "Code input",
+    category: "Inputs",
+    desc: "Six boxes that auto-advance, accept a pasted code and shake when it's wrong.",
+    html: code`
+      <div class="otp-demo">
+        <div class="otp">
+          <input inputmode="numeric" autocomplete="one-time-code" aria-label="Digit 1">
+          <input inputmode="numeric" aria-label="Digit 2">
+          <input inputmode="numeric" aria-label="Digit 3">
+          <input inputmode="numeric" aria-label="Digit 4">
+          <input inputmode="numeric" aria-label="Digit 5">
+          <input inputmode="numeric" aria-label="Digit 6">
+        </div>
+        <p class="otp-msg">Type 123456, or paste it.</p>
+      </div>`,
+    css: code`
+      .otp-demo { display: grid; justify-items: center; gap: 14px; }
+      .otp { display: flex; gap: 8px; }
+      .otp input {
+        width: 40px;
+        height: 50px;
+        padding: 0;
+        border: 1px solid #ffffff26;
+        border-radius: 12px;
+        background: #141416;
+        color: #ededef;
+        font: 600 20px system-ui, sans-serif;
+        text-align: center;
+        caret-color: #e97949;
+        outline: none;
+        transition: border-color .2s, background-color .2s;
+      }
+      .otp input:focus { border-color: #e97949; }
+      .otp.ok input { border-color: #e97949; background: #e979491f; }
+      .otp.bad { animation: shake .4s; }
+      @keyframes shake {
+        20%, 60% { transform: translateX(-6px); }
+        40%, 80% { transform: translateX(6px); }
+      }
+      .otp-msg { margin: 0; color: #a1a1aa; font-size: 13px; }`,
+    js: code`
+      const box = document.querySelector(".otp");
+      const inputs = [...box.querySelectorAll("input")];
+      const msg = document.querySelector(".otp-msg");
+      const hint = msg.textContent;
+
+      // Put digits into the boxes starting at index "from", then check the code.
+      function fill(from, digits) {
+        [...digits].slice(0, inputs.length - from).forEach((d, i) => (inputs[from + i].value = d));
+        (inputs.find(el => !el.value) || inputs[inputs.length - 1]).focus();
+        check();
+      }
+
+      function check() {
+        const code = inputs.map(el => el.value).join("");
+        box.classList.remove("ok", "bad");
+        if (code.length < inputs.length) {
+          msg.textContent = hint;
+          return;
+        }
+        void box.offsetWidth; // restart the shake animation
+        const ok = code === "123456";
+        box.classList.add(ok ? "ok" : "bad");
+        msg.textContent = ok ? "Code accepted." : "Wrong code. Try again.";
+      }
+
+      inputs.forEach((input, i) => {
+        input.addEventListener("focus", () => input.select());
+        input.addEventListener("input", e => {
+          // e.data is what was typed; autofill sets the whole value instead.
+          const digits = (e.data || input.value).replace(/\D/g, "");
+          input.value = "";
+          if (digits) fill(i, digits);
+          else check();
+        });
+        input.addEventListener("keydown", e => {
+          if (e.key === "Backspace" && !input.value && i > 0) inputs[i - 1].focus();
+          if (e.key === "ArrowLeft" && i > 0) inputs[i - 1].focus();
+          if (e.key === "ArrowRight" && i < inputs.length - 1) inputs[i + 1].focus();
+        });
+        input.addEventListener("paste", e => {
+          e.preventDefault();
+          fill(i, e.clipboardData.getData("text").replace(/\D/g, ""));
+        });
+      });`
+  },
+  {
+    title: "Stacked card deck",
+    category: "Cards",
+    desc: "Click or press Enter to send the top card to the back.",
+    html: code`
+      <div class="deck" tabindex="0" role="button" aria-label="Show next card">
+        <div class="deck-card">Three</div>
+        <div class="deck-card">Two</div>
+        <div class="deck-card">One</div>
+      </div>`,
+    css: code`
+      .deck {
+        position: relative;
+        width: 220px;
+        height: 140px;
+        margin-top: 32px;
+        border-radius: 16px;
+        cursor: pointer;
+      }
+      .deck-card {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        border: 1px solid #ffffff1a;
+        border-radius: 16px;
+        font: 600 20px system-ui, sans-serif;
+        transition: transform .5s cubic-bezier(.16, 1, .3, 1), background-color .5s, color .5s;
+      }
+      .deck-card:nth-child(1) { background: #1c1c1f; color: #85858f; }
+      .deck-card:nth-child(2) { background: #27272a; color: #d4d4d8; }
+      .deck-card:nth-child(3) { background: #e97949; color: #0a0a0b; }`,
+    js: code`
+      const deck = document.querySelector(".deck");
+
+      function layout() {
+        [...deck.children].reverse().forEach((card, i) => {
+          card.style.transform = "translateY(" + i * -14 + "px) scale(" + (1 - i * 0.06) + ")";
+          card.style.zIndex = deck.children.length - i;
+        });
+      }
+
+      function next() {
+        deck.prepend(deck.lastElementChild);
+        layout();
+      }
+
+      deck.addEventListener("click", next);
+      deck.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          next();
+        }
+      });
+      layout();`
+  },
+  {
+    title: "Particle burst",
+    category: "Buttons",
+    desc: "Each click throws a handful of particles from the exact click point.",
+    html: code`
+      <button class="burst">Celebrate</button>`,
+    css: code`
+      .burst {
+        padding: 14px 30px;
+        border: 1px solid #ffffff2e;
+        border-radius: 999px;
+        background: #ffffff0a;
+        color: #ededef;
+        font: 500 15px system-ui, sans-serif;
+        cursor: pointer;
+        transition: transform .15s;
+      }
+      .burst:active { transform: scale(.95); }
+      .particle {
+        position: fixed;
+        width: 6px;
+        height: 6px;
+        border-radius: 2px;
+        pointer-events: none;
+      }`,
+    js: code`
+      const colors = ["#e97949", "#f2a07e", "#ededef", "#85858f"];
+
+      document.querySelector(".burst").addEventListener("click", e => {
+        // Keyboard clicks have no coordinates (detail is 0): burst from the center.
+        const r = e.currentTarget.getBoundingClientRect();
+        const x = e.detail ? e.clientX : r.left + r.width / 2;
+        const y = e.detail ? e.clientY : r.top + r.height / 2;
+
+        for (let i = 0; i < 18; i++) {
+          const p = document.createElement("span");
+          p.className = "particle";
+          p.style.left = x - 3 + "px";
+          p.style.top = y - 3 + "px";
+          p.style.background = colors[i % colors.length];
+          document.body.appendChild(p);
+
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 40 + Math.random() * 70;
+          const dx = Math.cos(angle) * distance;
+          const dy = Math.sin(angle) * distance;
+          p.animate([
+            { transform: "none", opacity: 1 },
+            { transform: "translate(" + dx + "px, " + dy + "px) rotate(" + Math.random() * 360 + "deg) scale(.4)", opacity: 0 }
+          ], {
+            duration: 600 + Math.random() * 400,
+            easing: "cubic-bezier(.16, 1, .3, 1)",
+            fill: "forwards"
+          }).onfinish = () => p.remove();
+        }
+      });`
+  },
+  {
+    title: "Typewriter",
+    category: "Text",
+    desc: "Types a word, pauses, deletes it and moves on to the next.",
+    html: code`
+      <p class="type">I build <span class="word"></span><span class="caret" aria-hidden="true"></span></p>`,
+    css: code`
+      .type {
+        width: 300px;
+        margin: 0;
+        color: #a1a1aa;
+        font: 600 22px system-ui, sans-serif;
+        white-space: nowrap;
+      }
+      .word { color: #ededef; }
+      .caret {
+        display: inline-block;
+        width: 2px;
+        height: 1.1em;
+        margin-left: 3px;
+        background: #e97949;
+        vertical-align: -.2em;
+        animation: blink 1s steps(1) infinite;
+      }
+      @keyframes blink { 50% { opacity: 0; } }`,
+    js: code`
+      const word = document.querySelector(".word");
+      const words = ["buttons.", "card systems.", "tiny interactions.", "things that move."];
+      let w = 0;
+      let length = 0;
+      let deleting = false;
+
+      function tick() {
+        const full = words[w];
+        length += deleting ? -1 : 1;
+        word.textContent = full.slice(0, length);
+
+        let delay = deleting ? 35 : 75;
+        if (!deleting && length === full.length) {
+          deleting = true;
+          delay = 1400; // pause on the full word
+        } else if (deleting && length === 0) {
+          deleting = false;
+          w = (w + 1) % words.length;
+          delay = 300;
+        }
+        setTimeout(tick, delay);
+      }
+
+      tick();`
+  },
+  {
+    title: "Shuffle grid",
+    category: "Cards",
+    desc: "Tiles glide to their new spots using the FLIP technique. Click again mid-move.",
+    html: code`
+      <div class="board">
+        <div class="tiles">
+          <div class="tile hot">1</div>
+          <div class="tile">2</div>
+          <div class="tile">3</div>
+          <div class="tile">4</div>
+          <div class="tile">5</div>
+          <div class="tile">6</div>
+        </div>
+        <button class="shuffle">Shuffle</button>
+      </div>`,
+    css: code`
+      .board { display: grid; justify-items: center; gap: 18px; }
+      .tiles { display: grid; grid-template-columns: repeat(3, 64px); gap: 10px; }
+      .tile {
+        display: grid;
+        place-items: center;
+        height: 64px;
+        border: 1px solid #ffffff1a;
+        border-radius: 14px;
+        background: #1c1c1f;
+        color: #a1a1aa;
+        font: 600 18px system-ui, sans-serif;
+      }
+      .tile.hot { background: #e97949; color: #0a0a0b; }
+      .shuffle {
+        padding: 11px 22px;
+        border: 1px solid #ffffff2e;
+        border-radius: 999px;
+        background: #ffffff0a;
+        color: #ededef;
+        font: 500 14px system-ui, sans-serif;
+        cursor: pointer;
+      }`,
+    js: code`
+      const grid = document.querySelector(".tiles");
+
+      document.querySelector(".shuffle").addEventListener("click", () => {
+        const tiles = [...grid.children];
+        // First: where is every tile right now (mid-animation included)?
+        const first = new Map(tiles.map(t => [t, t.getBoundingClientRect()]));
+
+        // Shuffle (Fisher-Yates) and put the tiles back in the new order.
+        for (let i = tiles.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+        }
+        grid.append(...tiles);
+
+        // Last, Invert, Play: measure the new spot, jump back to the old one, animate home.
+        tiles.forEach(t => {
+          t.getAnimations().forEach(a => a.cancel());
+          const a = first.get(t);
+          const b = t.getBoundingClientRect();
+          t.animate([
+            { transform: "translate(" + (a.left - b.left) + "px, " + (a.top - b.top) + "px)" },
+            { transform: "none" }
+          ], { duration: 500, easing: "cubic-bezier(.16, 1, .3, 1)" });
+        });
+      });`
+  },
+  {
+    title: "Hold to confirm",
+    category: "Buttons",
+    desc: "Press and hold to confirm. Let go early and it rewinds.",
+    html: code`
+      <button class="hold">
+        <span class="hold-fill" aria-hidden="true"></span>
+        <span class="hold-label">Hold to delete</span>
+      </button>`,
+    css: code`
+      .hold {
+        position: relative;
+        overflow: hidden;
+        padding: 15px 30px;
+        border: 1px solid #ffffff2e;
+        border-radius: 999px;
+        background: #ffffff0a;
+        color: #ededef;
+        font: 500 15px system-ui, sans-serif;
+        cursor: pointer;
+        user-select: none;
+        touch-action: none;
+        -webkit-touch-callout: none;
+      }
+      .hold-fill {
+        position: absolute;
+        inset: 0;
+        background: #e9794966;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .3s ease-out;
+      }
+      .hold.holding .hold-fill {
+        transform: scaleX(1);
+        transition: transform 1.2s linear;
+      }
+      .hold.done { border-color: #e97949; background: #e97949; color: #0a0a0b; }
+      .hold-label { position: relative; }`,
+    js: code`
+      const btn = document.querySelector(".hold");
+      const label = btn.querySelector(".hold-label");
+      const fill = btn.querySelector(".hold-fill");
+
+      function start(e) {
+        if (btn.classList.contains("done")) return;
+        if (e.type === "keydown" && (e.repeat || (e.key !== " " && e.key !== "Enter"))) return;
+        btn.classList.add("holding");
+      }
+
+      function cancel() {
+        btn.classList.remove("holding");
+      }
+
+      // The fill finishing its 1.2s transition means the hold was long enough.
+      fill.addEventListener("transitionend", () => {
+        if (!btn.classList.contains("holding")) return;
+        btn.classList.replace("holding", "done");
+        label.textContent = "Deleted";
+        setTimeout(() => {
+          btn.classList.remove("done");
+          label.textContent = "Hold to delete";
+        }, 1600);
+      });
+
+      btn.addEventListener("pointerdown", start);
+      btn.addEventListener("keydown", start);
+      ["pointerup", "pointerleave", "pointercancel", "keyup", "blur"].forEach(type =>
+        btn.addEventListener(type, cancel)
+      );
+      btn.addEventListener("contextmenu", e => e.preventDefault()); // no long-press menu on touch`
+  },
+  {
+    title: "Star rating",
+    category: "Inputs",
+    desc: "Hover previews, click sets, arrow keys adjust. Built as a radio group.",
+    html: code`
+      <div class="rate">
+        <div class="stars" role="radiogroup" aria-label="Rating">
+          <button role="radio" aria-label="1 star">★</button>
+          <button role="radio" aria-label="2 stars">★</button>
+          <button role="radio" aria-label="3 stars">★</button>
+          <button role="radio" aria-label="4 stars">★</button>
+          <button role="radio" aria-label="5 stars">★</button>
+        </div>
+        <p>No rating yet</p>
+      </div>`,
+    css: code`
+      .rate { display: grid; justify-items: center; gap: 10px; }
+      .stars { display: flex; gap: 2px; }
+      .stars button {
+        padding: 2px 4px;
+        border: 0;
+        background: none;
+        color: #63636b;
+        font-size: 34px;
+        line-height: 1;
+        cursor: pointer;
+        transition: color .15s, transform .25s cubic-bezier(.34, 1.56, .64, 1);
+      }
+      .stars button.lit { color: #e97949; }
+      .stars button:active { transform: scale(.8); }
+      .rate p { margin: 0; color: #a1a1aa; font-size: 14px; }`,
+    js: code`
+      const stars = [...document.querySelectorAll(".stars button")];
+      const group = document.querySelector(".stars");
+      const text = document.querySelector(".rate p");
+      const words = ["No rating yet", "Poor", "Fair", "Good", "Great", "Excellent"];
+      let value = 0;
+
+      const paint = n => stars.forEach((s, i) => s.classList.toggle("lit", i < n));
+
+      function set(n) {
+        value = n;
+        paint(n);
+        text.textContent = words[n];
+        stars.forEach((s, i) => {
+          s.setAttribute("aria-checked", String(i + 1 === n));
+          s.tabIndex = i === Math.max(n, 1) - 1 ? 0 : -1;
+        });
+      }
+
+      stars.forEach((s, i) => {
+        // Hovering previews a rating; leaving the stars restores the real one.
+        s.addEventListener("pointerenter", () => {
+          paint(i + 1);
+          text.textContent = words[i + 1];
+        });
+        s.addEventListener("click", () => set(i + 1));
+      });
+
+      group.addEventListener("pointerleave", () => set(value));
+      group.addEventListener("keydown", e => {
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+        set(Math.min(5, Math.max(1, value + (e.key === "ArrowRight" ? 1 : -1))));
+        stars[value - 1].focus();
+      });
+
+      set(0);`
+  },
+  {
+    title: "Carousel",
+    category: "Cards",
+    desc: "Native scroll snap does the settling. JavaScript adds arrows and live dots.",
+    html: code`
+      <div class="carousel">
+        <div class="track">
+          <div class="slide">Swipe, scroll or use the arrows</div>
+          <div class="slide">Scroll snap does the settling</div>
+          <div class="slide">The dots follow the visible slide</div>
+          <div class="slide">No carousel library needed</div>
+          <div class="slide">Last one</div>
+        </div>
+        <div class="controls">
+          <button class="prev" aria-label="Previous slide">‹</button>
+          <div class="dots"></div>
+          <button class="next" aria-label="Next slide">›</button>
+        </div>
+      </div>`,
+    css: code`
+      .carousel { width: 300px; }
+      .track {
+        position: relative;
+        display: flex;
+        gap: 12px;
+        padding-inline: 30px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+      }
+      .track::-webkit-scrollbar { display: none; }
+      .slide {
+        flex: 0 0 240px;
+        box-sizing: border-box;
+        height: 160px;
+        padding: 18px;
+        display: flex;
+        align-items: flex-end;
+        border: 1px solid #ffffff1a;
+        border-radius: 16px;
+        background: linear-gradient(160deg, #2a2a2f, #151517);
+        color: #ededef;
+        font: 600 16px/1.3 system-ui, sans-serif;
+        scroll-snap-align: center;
+      }
+      .slide:first-child { background: #e97949; color: #0a0a0b; }
+      .controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        margin-top: 16px;
+      }
+      .controls button {
+        width: 34px;
+        height: 34px;
+        border: 1px solid #ffffff2e;
+        border-radius: 50%;
+        background: none;
+        color: #ededef;
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+      }
+      .dots { display: flex; gap: 6px; }
+      .dots span {
+        width: 6px;
+        height: 6px;
+        border-radius: 3px;
+        background: #ffffff33;
+        transition: width .3s, background-color .3s;
+      }
+      .dots span.on { width: 18px; background: #e97949; }`,
+    js: code`
+      const track = document.querySelector(".track");
+      const slides = [...track.children];
+      const dots = document.querySelector(".dots");
+      let index = 0;
+
+      slides.forEach(() => dots.append(document.createElement("span")));
+
+      function go(i) {
+        const slide = slides[Math.max(0, Math.min(slides.length - 1, i))];
+        track.scrollTo({ left: slide.offsetLeft - (track.clientWidth - slide.offsetWidth) / 2 });
+      }
+
+      // Whichever slide is mostly in view becomes the active one.
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (!e.isIntersecting) return;
+          index = slides.indexOf(e.target);
+          [...dots.children].forEach((d, i) => d.classList.toggle("on", i === index));
+        });
+      }, { root: track, threshold: 0.6 });
+      slides.forEach(s => io.observe(s));
+
+      document.querySelector(".prev").addEventListener("click", () => go(index - 1));
+      document.querySelector(".next").addEventListener("click", () => go(index + 1));`
+  },
+  {
+    title: "Magnetic button",
+    category: "Buttons",
+    desc: "Drifts toward the pointer, then springs back.",
+    html: code`
+      <button class="magnetic">Hover me</button>`,
+    css: code`
+      .magnetic {
+        padding: 16px 34px;
+        border: 1px solid #ffffff2e;
+        border-radius: 999px;
+        background: #ffffff0a;
+        color: #ededef;
+        font: 500 15px system-ui, sans-serif;
+        cursor: pointer;
+        transition: transform .4s cubic-bezier(.34, 1.56, .64, 1), background-color .2s;
+      }
+      .magnetic:hover { background: #ffffff14; }`,
+    js: code`
+      const btn = document.querySelector(".magnetic");
+
+      btn.addEventListener("pointermove", e => {
+        const r = btn.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        btn.style.transform = "translate(" + x * 0.35 + "px, " + y * 0.5 + "px)";
+      });
+
+      btn.addEventListener("pointerleave", () => {
+        btn.style.transform = "";
+      });`
+  },
+  {
+    title: "Skeleton loader",
+    category: "Feedback",
+    desc: "A shimmering placeholder in the card's real shape until the content arrives.",
+    html: code`
+      <div class="sk-demo">
+        <article class="sk-card">
+          <div class="sk-thumb"></div>
+          <h3>Designing tactile buttons</h3>
+          <p>Small press states that make an interface feel physical.</p>
+        </article>
+        <button class="sk-reload">Reload</button>
+      </div>`,
+    css: code`
+      .sk-demo { display: grid; justify-items: center; gap: 14px; }
+      .sk-card {
+        box-sizing: border-box;
+        width: 280px;
+        padding: 14px;
+        border: 1px solid #ffffff1a;
+        border-radius: 16px;
+        background: #141416;
+      }
+      .sk-thumb {
+        height: 110px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #e97949, #f2a07e);
+      }
+      .sk-card h3 { margin: 14px 0 6px; color: #ededef; font-size: 16px; }
+      .sk-card p { margin: 0; color: #a1a1aa; font-size: 13px; line-height: 1.5; }
+      .sk-card.loading :is(.sk-thumb, h3, p) {
+        color: transparent;
+        border-radius: 8px;
+        background: linear-gradient(90deg, #1f1f23 30%, #2c2c31 50%, #1f1f23 70%) 0 0 / 300% 100%;
+        animation: shimmer 1.2s linear infinite;
+      }
+      .sk-card:not(.loading) :is(.sk-thumb, h3, p) { animation: fade .5s ease both; }
+      @keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+      @keyframes fade { from { opacity: 0; } }
+      .sk-reload {
+        padding: 10px 20px;
+        border: 1px solid #ffffff2e;
+        border-radius: 999px;
+        background: #ffffff0a;
+        color: #ededef;
+        font: 500 14px system-ui, sans-serif;
+        cursor: pointer;
+      }`,
+    js: code`
+      const card = document.querySelector(".sk-card");
+      let timer;
+
+      function load() {
+        card.classList.add("loading");
+        card.setAttribute("aria-busy", "true");
+        clearTimeout(timer);
+        // Stand-in for fetching the real content.
+        timer = setTimeout(() => {
+          card.classList.remove("loading");
+          card.removeAttribute("aria-busy");
+        }, 1500);
+      }
+
+      document.querySelector(".sk-reload").addEventListener("click", load);
+      load();`
+  },
+  {
+    title: "Accordion",
+    category: "Cards",
+    desc: "Smooth open and close with no height math. One panel open at a time.",
+    html: code`
+      <div class="acc">
+        <div class="acc-item">
+          <button class="acc-head" aria-expanded="true">How does it animate?</button>
+          <div class="acc-body"><div><p>The panel animates grid-template-rows from 0fr to 1fr, so no heights are measured in JavaScript.</p></div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-head" aria-expanded="false">Does it work with a keyboard?</button>
+          <div class="acc-body"><div><p>Yes. Each header is a real button with aria-expanded, so Tab, Enter and screen readers all work.</p></div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-head" aria-expanded="false">Can several stay open?</button>
+          <div class="acc-body"><div><p>Not in this version: opening one closes the others. Delete one line to change that.</p></div></div>
+        </div>
+      </div>`,
+    css: code`
+      .acc {
+        width: 300px;
+        border: 1px solid #ffffff1a;
+        border-radius: 16px;
+        background: #141416;
+        overflow: hidden;
+      }
+      .acc-item + .acc-item { border-top: 1px solid #ffffff14; }
+      .acc-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 14px 18px;
+        border: 0;
+        background: none;
+        color: #ededef;
+        font: 500 14px system-ui, sans-serif;
+        text-align: left;
+        cursor: pointer;
+      }
+      .acc-head::after {
+        content: "+";
+        color: #85858f;
+        font-size: 18px;
+        line-height: 1;
+        transition: transform .3s, color .3s;
+      }
+      .acc-head[aria-expanded="true"]::after { color: #e97949; transform: rotate(45deg); }
+      .acc-body {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows .35s cubic-bezier(.16, 1, .3, 1);
+      }
+      .acc-head[aria-expanded="true"] + .acc-body { grid-template-rows: 1fr; }
+      .acc-body > div { min-height: 0; overflow: hidden; }
+      .acc-body p {
+        margin: 0;
+        padding: 0 18px 16px;
+        color: #a1a1aa;
+        font: 13px/1.55 system-ui, sans-serif;
+      }`,
+    js: code`
+      const heads = document.querySelectorAll(".acc-head");
+
+      heads.forEach(head => head.addEventListener("click", () => {
+        const open = head.getAttribute("aria-expanded") === "true";
+        heads.forEach(h => h.setAttribute("aria-expanded", "false")); // one open at a time
+        head.setAttribute("aria-expanded", String(!open));
+      }));`
+  },
+  {
+    title: "Rolling stepper",
+    category: "Inputs",
+    desc: "Numbers roll up or down depending on which way you count.",
+    html: code`
+      <div class="stepper">
+        <button class="step" data-dir="-1" aria-label="Decrease">−</button>
+        <output class="value" aria-live="polite"><span>0</span></output>
+        <button class="step" data-dir="1" aria-label="Increase">+</button>
+      </div>`,
+    css: code`
+      .stepper {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px;
+        border: 1px solid #ffffff1a;
+        border-radius: 999px;
+        background: #141416;
+      }
+      .step {
+        width: 44px;
+        height: 44px;
+        border: 0;
+        border-radius: 50%;
+        background: #27272a;
+        color: #ededef;
+        font: 500 22px system-ui, sans-serif;
+        cursor: pointer;
+        transition: background-color .2s, transform .15s;
+      }
+      .step:hover { background: #3f3f46; }
+      .step:active { transform: scale(.9); }
+      .value {
+        display: grid;
+        width: 72px;
+        height: 44px;
+        overflow: hidden;
+        color: #ededef;
+        font: 600 24px system-ui, sans-serif;
+        font-variant-numeric: tabular-nums;
+      }
+      .value span { grid-area: 1 / 1; place-self: center; }`,
+    js: code`
+      const value = document.querySelector(".value");
+      let count = 0;
+
+      function roll(dir) {
+        count += dir;
+        const prev = value.lastElementChild;
+        const next = document.createElement("span");
+        next.textContent = count;
+        value.append(next);
+
+        // Counting up: the new number rises from below while the old one exits the top.
+        const timing = { duration: 350, easing: "cubic-bezier(.16, 1, .3, 1)" };
+        next.animate([
+          { transform: "translateY(" + dir * 100 + "%)", opacity: 0 },
+          { transform: "none", opacity: 1 }
+        ], timing);
+        prev.animate([
+          { transform: "none", opacity: 1 },
+          { transform: "translateY(" + -dir * 100 + "%)", opacity: 0 }
+        ], { ...timing, fill: "forwards" }).onfinish = () => prev.remove();
+      }
+
+      document.querySelectorAll(".step").forEach(btn =>
+        btn.addEventListener("click", () => roll(Number(btn.dataset.dir)))
+      );`
+  },
+  {
+    title: "Tabs",
+    category: "Navigation",
+    desc: "ARIA tabs with a sliding underline. Arrow keys, Home and End work.",
+    html: code`
+      <div class="tabs">
+        <div class="tablist" role="tablist" aria-label="Project">
+          <button role="tab" id="tab-1" aria-controls="panel-1">Overview</button>
+          <button role="tab" id="tab-2" aria-controls="panel-2">Activity</button>
+          <button role="tab" id="tab-3" aria-controls="panel-3">Settings</button>
+          <span class="indicator" aria-hidden="true"></span>
+        </div>
+        <div role="tabpanel" id="panel-1" aria-labelledby="tab-1">Arrow keys move between tabs. Home and End jump to the first and last one.</div>
+        <div role="tabpanel" id="panel-2" aria-labelledby="tab-2">The underline measures the active tab and slides over to it.</div>
+        <div role="tabpanel" id="panel-3" aria-labelledby="tab-3">Each panel is a real tabpanel, linked to its tab with aria-controls.</div>
+      </div>`,
+    css: code`
+      .tabs { width: 300px; font-family: system-ui, sans-serif; }
+      .tablist {
+        position: relative;
+        display: flex;
+        gap: 4px;
+        border-bottom: 1px solid #ffffff1a;
+      }
+      .tablist button {
+        padding: 10px 12px;
+        border: 0;
+        background: none;
+        color: #85858f;
+        font: 500 14px system-ui, sans-serif;
+        cursor: pointer;
+        transition: color .2s;
+      }
+      .tablist button:hover,
+      .tablist button[aria-selected="true"] { color: #ededef; }
+      .indicator {
+        position: absolute;
+        left: 0;
+        bottom: -1px;
+        height: 2px;
+        border-radius: 2px;
+        background: #e97949;
+        transition: transform .35s cubic-bezier(.16, 1, .3, 1), width .35s cubic-bezier(.16, 1, .3, 1);
+      }
+      [role="tabpanel"] {
+        min-height: 66px;
+        padding: 16px 2px 0;
+        color: #a1a1aa;
+        font-size: 14px;
+        line-height: 1.55;
+      }`,
+    js: code`
+      const tabs = [...document.querySelectorAll('[role="tab"]')];
+      const indicator = document.querySelector(".indicator");
+
+      function select(tab, focus) {
+        tabs.forEach(t => {
+          const on = t === tab;
+          const panel = document.getElementById(t.getAttribute("aria-controls"));
+          if (on && panel.hidden) {
+            panel.animate([{ opacity: 0, transform: "translateY(4px)" }, { opacity: 1, transform: "none" }], { duration: 250, easing: "ease-out" });
+          }
+          panel.hidden = !on;
+          t.setAttribute("aria-selected", String(on));
+          t.tabIndex = on ? 0 : -1;
+        });
+        indicator.style.width = tab.offsetWidth + "px";
+        indicator.style.transform = "translateX(" + tab.offsetLeft + "px)";
+        if (focus) tab.focus();
+      }
+
+      tabs.forEach(t => t.addEventListener("click", () => select(t)));
+
+      document.querySelector('[role="tablist"]').addEventListener("keydown", e => {
+        const i = tabs.indexOf(document.activeElement);
+        const n = tabs.length;
+        const next = { ArrowRight: (i + 1) % n, ArrowLeft: (i - 1 + n) % n, Home: 0, End: n - 1 }[e.key];
+        if (next === undefined) return;
+        e.preventDefault();
+        select(tabs[next], true);
+      });
+
+      // Place the underline without sliding it in on load.
+      indicator.style.transition = "none";
+      select(tabs[0]);
+      void indicator.offsetWidth;
+      indicator.style.transition = "";`
+  },
+  {
+    title: "Like button",
+    category: "Buttons",
+    desc: "A toggle with a heart pop, an expanding ring and a live count.",
+    html: code`
+      <button class="like" aria-pressed="false">
+        <span class="heart" aria-hidden="true">♥&#xFE0E;</span>
+        <span class="sr">Like</span>
+        <span class="count">128</span>
+      </button>`,
+    css: code`
+      .like {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 22px 12px 18px;
+        border: 1px solid #ffffff2e;
+        border-radius: 999px;
+        background: #ffffff0a;
+        color: #ededef;
+        font: 600 16px system-ui, sans-serif;
+        font-variant-numeric: tabular-nums;
+        cursor: pointer;
+        transition: border-color .2s;
+      }
+      .like[aria-pressed="true"] { border-color: #e9794980; }
+      .heart {
+        color: #71717a;
+        font-size: 22px;
+        line-height: 1;
+        transition: color .2s;
+      }
+      .like[aria-pressed="true"] .heart { color: #e97949; }
+      .ring {
+        position: absolute;
+        top: 50%;
+        width: 34px;
+        height: 34px;
+        border: 2px solid #e97949;
+        border-radius: 50%;
+        pointer-events: none;
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }`,
+    js: code`
+      const btn = document.querySelector(".like");
+      const heart = btn.querySelector(".heart");
+      const count = btn.querySelector(".count");
+
+      btn.addEventListener("click", () => {
+        const liked = btn.getAttribute("aria-pressed") !== "true";
+        btn.setAttribute("aria-pressed", String(liked));
+        count.textContent = Number(count.textContent) + (liked ? 1 : -1);
+        if (!liked) return;
+
+        // Pop the heart and send a ring out from behind it.
+        heart.animate(
+          [{ transform: "scale(1)" }, { transform: "scale(1.5)" }, { transform: "scale(1)" }],
+          { duration: 450, easing: "cubic-bezier(.34, 1.56, .64, 1)" }
+        );
+        const ring = document.createElement("span");
+        ring.className = "ring";
+        ring.style.left = heart.offsetLeft + heart.offsetWidth / 2 + "px";
+        btn.appendChild(ring);
+        ring.animate(
+          [
+            { transform: "translate(-50%, -50%) scale(.3)", opacity: 1 },
+            { transform: "translate(-50%, -50%) scale(1.6)", opacity: 0 }
+          ],
+          { duration: 500, easing: "ease-out", fill: "forwards" }
+        ).onfinish = () => ring.remove();
+      });`
+  },
+  {
+    title: "Scratch card",
+    category: "Cards",
+    desc: "Scratch the canvas away with the pointer. Past half, the rest fades out.",
+    html: code`
+      <div class="scratch-demo">
+        <div class="scratch">
+          <div class="prize"><strong>You found it</strong>The whole effect is one canvas.</div>
+          <canvas aria-hidden="true"></canvas>
+        </div>
+        <button class="scratch-reset">Reset</button>
+      </div>`,
+    css: code`
+      .scratch-demo { display: grid; justify-items: center; gap: 14px; }
+      .scratch {
+        position: relative;
+        width: 260px;
+        height: 150px;
+        border-radius: 16px;
+        overflow: hidden;
+        touch-action: none;
+      }
+      .prize {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        gap: 4px;
+        background: #e97949;
+        color: #3b1a0c;
+        font: 13px system-ui, sans-serif;
+        text-align: center;
+      }
+      .prize strong { color: #0a0a0b; font-size: 22px; }
+      .scratch canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        cursor: crosshair;
+      }
+      .scratch canvas.cleared { opacity: 0; pointer-events: none; transition: opacity .5s; }
+      .scratch-reset {
+        padding: 10px 20px;
+        border: 1px solid #ffffff2e;
+        border-radius: 999px;
+        background: #ffffff0a;
+        color: #ededef;
+        font: 500 14px system-ui, sans-serif;
+        cursor: pointer;
+      }`,
+    js: code`
+      const card = document.querySelector(".scratch");
+      const canvas = card.querySelector("canvas");
+      const ctx = canvas.getContext("2d");
+      let last = null;
+
+      function cover() {
+        const w = card.clientWidth;
+        const h = card.clientHeight;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = w * dpr; // resizing also resets every drawing setting
+        canvas.height = h * dpr;
+        ctx.scale(dpr, dpr);
+        ctx.fillStyle = "#3f3f46";
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "#a1a1aa";
+        ctx.font = "600 15px system-ui, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Scratch here", w / 2, h / 2 + 5);
+        // From here on, drawing erases.
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.lineWidth = 36;
+        ctx.lineCap = ctx.lineJoin = "round";
+        canvas.classList.remove("cleared");
+      }
+
+      function scratch(e) {
+        const r = canvas.getBoundingClientRect();
+        const p = { x: e.clientX - r.left, y: e.clientY - r.top };
+        ctx.beginPath();
+        ctx.moveTo((last || p).x, (last || p).y);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+        last = p;
+      }
+
+      // Share of fully transparent pixels, sampling every fourth pixel.
+      function clearedShare() {
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let clear = 0;
+        for (let i = 3; i < data.length; i += 16) if (data[i] === 0) clear++;
+        return clear / (data.length / 16);
+      }
+
+      canvas.addEventListener("pointerdown", e => {
+        canvas.setPointerCapture(e.pointerId);
+        last = null;
+        scratch(e);
+      });
+      canvas.addEventListener("pointermove", e => {
+        if (canvas.hasPointerCapture(e.pointerId)) scratch(e);
+      });
+      canvas.addEventListener("pointerup", () => {
+        if (clearedShare() > 0.5) canvas.classList.add("cleared");
+      });
+
+      document.querySelector(".scratch-reset").addEventListener("click", cover);
+      cover();`
+  },
+  {
+    title: "Password field",
+    category: "Inputs",
+    desc: "A show and hide toggle, a strength meter and live rule checks.",
+    html: code`
+      <div class="pw">
+        <label for="pw-input">Password</label>
+        <div class="pw-field">
+          <input id="pw-input" type="password" autocomplete="new-password" aria-describedby="pw-rules">
+          <button class="pw-toggle" type="button" aria-pressed="false">Show</button>
+        </div>
+        <div class="pw-meter" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <ul class="pw-rules" id="pw-rules">
+          <li data-rule="length">At least 8 characters</li>
+          <li data-rule="cases">Upper and lower case</li>
+          <li data-rule="number">A number</li>
+          <li data-rule="symbol">A symbol</li>
+        </ul>
+      </div>`,
+    css: code`
+      .pw { display: grid; gap: 8px; width: 290px; font-family: system-ui, sans-serif; }
+      .pw label { color: #ededef; font-size: 13px; font-weight: 500; }
+      .pw-field { position: relative; }
+      .pw-field input {
+        box-sizing: border-box;
+        width: 100%;
+        height: 44px;
+        padding: 0 64px 0 14px;
+        border: 1px solid #ffffff26;
+        border-radius: 12px;
+        background: #141416;
+        color: #ededef;
+        font: 15px system-ui, sans-serif;
+        outline: none;
+        transition: border-color .2s;
+      }
+      .pw-field input:focus { border-color: #e97949; }
+      .pw-toggle {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        height: 32px;
+        padding: 0 10px;
+        border: 0;
+        border-radius: 8px;
+        background: #27272a;
+        color: #ededef;
+        font: 500 12px system-ui, sans-serif;
+        cursor: pointer;
+      }
+      .pw-meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 2px; }
+      .pw-meter span { height: 4px; border-radius: 2px; background: #27272a; transition: background-color .3s; }
+      .pw-meter span.on { background: #e97949; }
+      .pw-rules {
+        display: grid;
+        gap: 4px;
+        margin: 4px 0 0;
+        padding: 0;
+        list-style: none;
+        color: #85858f;
+        font-size: 13px;
+      }
+      .pw-rules li::before { content: "○"; display: inline-block; width: 18px; }
+      .pw-rules li.ok { color: #ededef; }
+      .pw-rules li.ok::before { content: "✓"; color: #e97949; }`,
+    js: code`
+      const input = document.getElementById("pw-input");
+      const toggle = document.querySelector(".pw-toggle");
+      const bars = document.querySelectorAll(".pw-meter span");
+      const rules = {
+        length: v => v.length >= 8,
+        cases: v => /[a-z]/.test(v) && /[A-Z]/.test(v),
+        number: v => /\d/.test(v),
+        symbol: v => /[^A-Za-z0-9\s]/.test(v)
+      };
+
+      input.addEventListener("input", () => {
+        let score = 0;
+        document.querySelectorAll(".pw-rules li").forEach(li => {
+          const ok = rules[li.dataset.rule](input.value);
+          li.classList.toggle("ok", ok);
+          score += ok;
+        });
+        bars.forEach((bar, i) => bar.classList.toggle("on", i < score));
+      });
+
+      toggle.addEventListener("click", () => {
+        const show = input.type === "password";
+        input.type = show ? "text" : "password";
+        toggle.textContent = show ? "Hide" : "Show";
+        toggle.setAttribute("aria-pressed", String(show));
+        input.focus();
+      });`
+  },
+  {
+    title: "Kinetic letters",
+    category: "Text",
+    desc: "Letters push away from the pointer and settle back when it leaves.",
+    html: code`
+      <h2 class="kinetic">Push the letters</h2>`,
+    css: code`
+      .kinetic {
+        margin: 0;
+        color: #ededef;
+        font: 700 34px system-ui, sans-serif;
+        letter-spacing: -.02em;
+        cursor: default;
+        user-select: none;
+      }
+      .kinetic span {
+        display: inline-block;
+        white-space: pre;
+        transition: transform .3s cubic-bezier(.16, 1, .3, 1), color .3s;
+      }`,
+    js: code`
+      const title = document.querySelector(".kinetic");
+      const text = title.textContent;
+      const RADIUS = 90;
+      const PUSH = 26;
+
+      // One span per letter; screen readers still get the plain text.
+      title.setAttribute("aria-label", text);
+      title.textContent = "";
+      const letters = [...text].map(ch => {
+        const span = document.createElement("span");
+        span.textContent = ch;
+        span.setAttribute("aria-hidden", "true");
+        title.append(span);
+        return span;
+      });
+
+      // Resting centers, measured with transforms off, so a moving letter never chases itself.
+      let centers = [];
+      function measure() {
+        letters.forEach(s => {
+          s.style.transition = "none";
+          s.style.transform = "";
+        });
+        centers = letters.map(s => {
+          const r = s.getBoundingClientRect();
+          return [r.left + r.width / 2, r.top + r.height / 2];
+        });
+        letters.forEach(s => (s.style.transition = ""));
+      }
+      measure();
+      addEventListener("resize", measure);
+
+      document.addEventListener("pointermove", e => {
+        letters.forEach((s, i) => {
+          const dx = centers[i][0] - e.clientX;
+          const dy = centers[i][1] - e.clientY;
+          const d = Math.hypot(dx, dy) || 1;
+          const f = Math.max(0, 1 - d / RADIUS); // 1 at the pointer, 0 at RADIUS and beyond
+          s.style.transform = "translate(" + (dx / d) * f * PUSH + "px, " + (dy / d) * f * PUSH + "px) rotate(" + (dx / d) * f * 14 + "deg)";
+          s.style.color = f > 0.35 ? "#e97949" : "";
+        });
+      });
+
+      // The pointer left the page: let everything settle.
+      window.addEventListener("pointerout", e => {
+        if (e.relatedTarget) return;
+        letters.forEach(s => {
+          s.style.transform = "";
+          s.style.color = "";
+        });
+      });`
+  },
+  {
+    title: "Progress ring",
+    category: "Feedback",
+    desc: "An SVG ring and a percentage driven by one value, fed by a fake upload.",
+    html: code`
+      <div class="progress-demo">
+        <div class="ring-wrap">
+          <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+            <circle cx="60" cy="60" r="52"></circle>
+            <circle class="bar" cx="60" cy="60" r="52"></circle>
+          </svg>
+          <span class="pct" role="progressbar" aria-label="Upload" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">0%</span>
+        </div>
+        <button class="upload">Start upload</button>
+      </div>`,
+    css: code`
+      .progress-demo { display: grid; justify-items: center; gap: 18px; }
+      .ring-wrap { position: relative; width: 120px; height: 120px; }
+      .ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+      .ring circle { fill: none; stroke: #27272a; stroke-width: 8; }
+      .ring .bar {
+        stroke: #e97949;
+        stroke-linecap: round;
+        transition: stroke-dashoffset .35s ease-out, opacity .2s;
+      }
+      .pct {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: #ededef;
+        font: 600 24px system-ui, sans-serif;
+        font-variant-numeric: tabular-nums;
+      }
+      .upload {
+        padding: 11px 22px;
+        border: 1px solid #ffffff2e;
+        border-radius: 999px;
+        background: #ffffff0a;
+        color: #ededef;
+        font: 500 14px system-ui, sans-serif;
+        cursor: pointer;
+      }
+      .upload[aria-disabled="true"] { color: #85858f; cursor: progress; }`,
+    js: code`
+      const bar = document.querySelector(".ring .bar");
+      const pct = document.querySelector(".pct");
+      const btn = document.querySelector(".upload");
+      const C = 2 * Math.PI * 52;
+      bar.style.strokeDasharray = C;
+
+      function show(value) {
+        bar.style.strokeDashoffset = C * (1 - value / 100);
+        bar.style.opacity = value ? 1 : 0; // hide the round cap's dot at 0%
+        pct.textContent = Math.round(value) + "%";
+        pct.setAttribute("aria-valuenow", Math.round(value));
+      }
+
+      btn.addEventListener("click", () => {
+        if (btn.getAttribute("aria-disabled") === "true") return;
+        btn.setAttribute("aria-disabled", "true");
+        btn.textContent = "Uploading";
+        let value = 0;
+        // Fake an upload with uneven jumps, like a real network.
+        const timer = setInterval(() => {
+          value = Math.min(100, value + 4 + Math.random() * 14);
+          show(value);
+          if (value < 100) return;
+          clearInterval(timer);
+          btn.textContent = "Done";
+          setTimeout(() => {
+            show(0);
+            btn.removeAttribute("aria-disabled");
+            btn.textContent = "Start upload";
+          }, 1500);
+        }, 280);
+      });
+
+      show(0);`
+  },
+  {
+    title: "Dock",
+    category: "Navigation",
+    desc: "Icons grow as the pointer passes, like the macOS dock. Click one to bounce it.",
+    html: code`
+      <nav class="dock" aria-label="Apps">
+        <button class="app" aria-label="Files">F</button>
+        <button class="app" aria-label="Mail">M</button>
+        <button class="app" aria-label="Photos">P</button>
+        <button class="app" aria-label="Calendar">C</button>
+        <button class="app" aria-label="Notes">N</button>
+        <button class="app" aria-label="Settings">S</button>
+      </nav>`,
+    css: code`
+      .dock {
+        display: flex;
+        align-items: flex-end;
+        gap: 6px;
+        box-sizing: border-box;
+        height: 58px;
+        padding: 0 10px 10px;
+        border: 1px solid #ffffff1a;
+        border-radius: 18px;
+        background: #ffffff0d;
+      }
+      .app {
+        flex-shrink: 0;
+        width: 38px;
+        height: 38px;
+        border: 0;
+        border-radius: 10px;
+        background: #27272a;
+        color: #ededef;
+        font: 600 14px system-ui, sans-serif;
+        cursor: pointer;
+        transition: width .12s ease-out, height .12s ease-out;
+      }
+      .app:first-child { background: #e97949; color: #0a0a0b; }`,
+    js: code`
+      const dock = document.querySelector(".dock");
+      const apps = [...dock.querySelectorAll(".app")];
+      const BASE = 38;
+      const MAX = 58;
+      const RANGE = 110;
+
+      dock.addEventListener("pointermove", e => {
+        apps.forEach(app => {
+          const r = app.getBoundingClientRect();
+          const d = Math.abs(e.clientX - (r.left + r.width / 2));
+          // Cosine falloff: full size under the pointer, base size RANGE px away.
+          const k = d < RANGE ? (Math.cos((d / RANGE) * Math.PI) + 1) / 2 : 0;
+          app.style.width = app.style.height = BASE + (MAX - BASE) * k + "px";
+        });
+      });
+
+      dock.addEventListener("pointerleave", () => {
+        apps.forEach(app => (app.style.width = app.style.height = ""));
+      });
+
+      apps.forEach(app => app.addEventListener("click", () => {
+        app.animate(
+          [{ transform: "none" }, { transform: "translateY(-16px)" }, { transform: "none" }],
+          { duration: 450, easing: "cubic-bezier(.34, 1.56, .64, 1)" }
+        );
+      }));`
+  },
+  {
+    title: "Slide to confirm",
+    category: "Buttons",
+    desc: "Drag the knob all the way to confirm. Enter works for keyboard users.",
+    html: code`
+      <div class="slider">
+        <span class="slider-text">Slide to pay</span>
+        <button class="knob" aria-label="Slide to pay, or press Enter">→</button>
+      </div>`,
+    css: code`
+      .slider {
+        --x: 0px;
+        position: relative;
+        box-sizing: border-box;
+        width: 280px;
+        height: 58px;
+        border: 1px solid #ffffff1a;
+        border-radius: 999px;
+        background: #141416;
+        overflow: hidden;
+        user-select: none;
+      }
+      .slider::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: calc(var(--x) + 56px);
+        border-radius: inherit;
+        background: #e9794926;
+        transition: width .45s cubic-bezier(.34, 1.56, .64, 1);
+      }
+      .slider-text {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: #a1a1aa;
+        font: 500 15px system-ui, sans-serif;
+      }
+      .knob {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 48px;
+        height: 48px;
+        border: 0;
+        border-radius: 50%;
+        background: #e97949;
+        color: #0a0a0b;
+        font: 600 20px system-ui, sans-serif;
+        cursor: grab;
+        touch-action: none;
+        transform: translateX(var(--x));
+        transition: transform .45s cubic-bezier(.34, 1.56, .64, 1);
+      }
+      .slider.dragging::before,
+      .slider.dragging .knob { transition: none; }
+      .slider.dragging .knob { cursor: grabbing; }
+      .slider.done { border-color: #e97949; }
+      .slider.done .slider-text { color: #ededef; }`,
+    js: code`
+      const slider = document.querySelector(".slider");
+      const knob = slider.querySelector(".knob");
+      const text = slider.querySelector(".slider-text");
+      const max = () => slider.clientWidth - knob.offsetWidth - 8;
+
+      function place(x) {
+        slider.style.setProperty("--x", x + "px");
+        text.style.opacity = slider.classList.contains("done") ? 1 : 1 - x / max();
+      }
+
+      function finish() {
+        slider.classList.add("done");
+        text.textContent = "Paid";
+        place(max());
+        setTimeout(() => {
+          slider.classList.remove("done");
+          text.textContent = "Slide to pay";
+          place(0);
+        }, 1800);
+      }
+
+      knob.addEventListener("pointerdown", e => {
+        if (slider.classList.contains("done")) return;
+        const startX = e.clientX;
+        let x = 0;
+        knob.setPointerCapture(e.pointerId);
+        slider.classList.add("dragging");
+
+        const move = ev => {
+          x = Math.max(0, Math.min(max(), ev.clientX - startX));
+          place(x);
+        };
+        const end = () => {
+          knob.removeEventListener("pointermove", move);
+          knob.removeEventListener("pointerup", end);
+          knob.removeEventListener("pointercancel", end);
+          slider.classList.remove("dragging");
+          if (x >= max() * 0.9) finish();
+          else place(0); // not far enough: spring back
+        };
+        knob.addEventListener("pointermove", move);
+        knob.addEventListener("pointerup", end);
+        knob.addEventListener("pointercancel", end);
+      });
+
+      // Keyboard users confirm with Enter or Space (a click with detail 0).
+      knob.addEventListener("click", e => {
+        if (e.detail === 0 && !slider.classList.contains("done")) finish();
+      });`
+  },
+  {
+    title: "Expanding card",
+    category: "Cards",
+    desc: "A card grows into a full panel with one FLIP transform, then shrinks back.",
+    html: code`
+      <div class="albums">
+        <button class="album" data-title="Tactile">Tactile</button>
+        <button class="album" data-title="Motion">Motion</button>
+        <button class="album" data-title="Depth">Depth</button>
+      </div>
+      <div class="detail" role="dialog" aria-modal="true" aria-labelledby="detail-title" hidden>
+        <div class="detail-body">
+          <h3 id="detail-title"></h3>
+          <p>This panel grew out of the card you clicked with a single transform animation. Close it and it shrinks back.</p>
+          <button class="detail-close">Close</button>
+        </div>
+      </div>`,
+    css: code`
+      .albums { display: flex; gap: 10px; }
+      .album {
+        box-sizing: border-box;
+        display: flex;
+        align-items: flex-end;
+        width: 92px;
+        height: 124px;
+        padding: 12px;
+        border: 1px solid #ffffff1f;
+        border-radius: 14px;
+        background: #2a2a2f;
+        color: #ededef;
+        font: 600 14px system-ui, sans-serif;
+        text-align: left;
+        cursor: pointer;
+        transition: transform .2s;
+      }
+      .album:hover { transform: translateY(-3px); }
+      .album:nth-child(1) { background: #e97949; color: #0a0a0b; }
+      .album:nth-child(3) { background: #1c1c1f; }
+      .detail {
+        position: fixed;
+        inset: 16px;
+        border: 1px solid #ffffff1f;
+        border-radius: 18px;
+        transform-origin: 0 0;
+      }
+      .detail-body {
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        height: 100%;
+        padding: 22px;
+        font-family: system-ui, sans-serif;
+      }
+      .detail h3 { margin: 0; font-size: 24px; }
+      .detail p { margin: 0; max-width: 34ch; font-size: 14px; line-height: 1.5; opacity: .8; }
+      .detail-close {
+        margin-top: auto;
+        padding: 9px 18px;
+        border: 1px solid currentColor;
+        border-radius: 999px;
+        background: none;
+        color: inherit;
+        font: 500 14px system-ui, sans-serif;
+        cursor: pointer;
+      }`,
+    js: code`
+      const detail = document.querySelector(".detail");
+      const body = detail.querySelector(".detail-body");
+      const closeBtn = detail.querySelector(".detail-close");
+      let source = null;
+      let closing = false;
+
+      // The transform that lays the full panel exactly over a card's rect.
+      function over(rect) {
+        const full = detail.getBoundingClientRect();
+        return "translate(" + (rect.left - full.left) + "px, " + (rect.top - full.top) + "px) scale(" + rect.width / full.width + ", " + rect.height / full.height + ")";
+      }
+
+      document.querySelectorAll(".album").forEach(card => card.addEventListener("click", () => {
+        source = card;
+        const style = getComputedStyle(card);
+        detail.style.background = style.backgroundColor;
+        detail.style.color = style.color;
+        detail.querySelector("h3").textContent = card.dataset.title;
+        detail.hidden = false;
+        // FLIP: start the panel on top of the card, then let it grow to its real size.
+        detail.animate([{ transform: over(card.getBoundingClientRect()) }, { transform: "none" }], {
+          duration: 450,
+          easing: "cubic-bezier(.16, 1, .3, 1)"
+        });
+        body.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, delay: 220, fill: "backwards" });
+        closeBtn.focus();
+      }));
+
+      function collapse() {
+        if (closing || detail.hidden) return;
+        closing = true;
+        body.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: "forwards" });
+        const shrink = detail.animate([{ transform: "none" }, { transform: over(source.getBoundingClientRect()) }], {
+          duration: 350,
+          easing: "cubic-bezier(.16, 1, .3, 1)",
+          fill: "forwards"
+        });
+        shrink.onfinish = () => {
+          detail.hidden = true;
+          shrink.cancel();
+          body.getAnimations().forEach(a => a.cancel());
+          closing = false;
+          source.focus();
+        };
+      }
+
+      closeBtn.addEventListener("click", collapse);
+      document.addEventListener("keydown", e => {
+        if (e.key === "Escape") collapse();
+      });`
+  },
+  {
+    title: "Tag input",
+    category: "Inputs",
+    desc: "Enter or comma adds a tag, Backspace removes one. Duplicates are ignored.",
+    html: code`
+      <div class="tag-demo">
+        <div class="tags">
+          <ul class="tag-list" aria-label="Tags">
+            <li class="tag">javascript<button aria-label="Remove javascript">×</button></li>
+            <li class="tag">css<button aria-label="Remove css">×</button></li>
+          </ul>
+          <input class="tag-input" placeholder="Add a tag" aria-label="Add a tag">
+        </div>
+        <p class="tag-hint">Enter or comma adds a tag. Backspace removes the last one.</p>
+      </div>`,
+    css: code`
+      .tag-demo { display: grid; gap: 10px; width: 300px; font-family: system-ui, sans-serif; }
+      .tags {
+        box-sizing: border-box;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        min-height: 48px;
+        padding: 7px;
+        border: 1px solid #ffffff26;
+        border-radius: 14px;
+        background: #141416;
+        cursor: text;
+        transition: border-color .2s;
+      }
+      .tags:focus-within { border-color: #e97949; }
+      .tag-list { display: contents; }
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        padding: 5px 4px 5px 10px;
+        border-radius: 999px;
+        background: #27272a;
+        color: #ededef;
+        font-size: 13px;
+      }
+      .tag button {
+        padding: 0 6px;
+        border: 0;
+        background: none;
+        color: #85858f;
+        font-size: 16px;
+        line-height: 1;
+        cursor: pointer;
+      }
+      .tag button:hover { color: #e97949; }
+      .tag-input {
+        flex: 1;
+        min-width: 90px;
+        padding: 5px;
+        border: 0;
+        background: none;
+        color: #ededef;
+        font: 14px system-ui, sans-serif;
+        outline: none;
+      }
+      .tag-input::placeholder { color: #85858f; }
+      .tag-hint { margin: 0; color: #85858f; font-size: 12px; }`,
+    js: code`
+      const box = document.querySelector(".tags");
+      const list = box.querySelector(".tag-list");
+      const input = box.querySelector(".tag-input");
+
+      function addTag(raw) {
+        const value = raw.trim().toLowerCase();
+        const taken = [...list.children].some(li => li.firstChild.textContent === value);
+        if (!value || taken) return;
+        const li = document.createElement("li");
+        li.className = "tag";
+        li.textContent = value;
+        const remove = document.createElement("button");
+        remove.setAttribute("aria-label", "Remove " + value);
+        remove.textContent = "×";
+        li.append(remove);
+        list.append(li);
+        li.animate(
+          [{ transform: "scale(.6)", opacity: 0 }, { transform: "none", opacity: 1 }],
+          { duration: 250, easing: "cubic-bezier(.34, 1.56, .64, 1)" }
+        );
+      }
+
+      input.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === ",") {
+          e.preventDefault();
+          input.value.split(",").forEach(addTag);
+          input.value = "";
+        } else if (e.key === "Backspace" && !input.value && list.lastElementChild) {
+          list.lastElementChild.remove();
+        }
+      });
+
+      list.addEventListener("click", e => {
+        if (e.target.tagName !== "BUTTON") return;
+        e.target.parentElement.remove();
+        input.focus();
+      });
+
+      // Clicking the empty part of the box focuses the input.
+      box.addEventListener("click", e => {
+        if (e.target === box) input.focus();
+      });`
+  },
+  {
+    title: "Dropdown menu",
+    category: "Navigation",
+    desc: "A menu button with arrow-key focus, Escape to close and a checked choice.",
+    html: code`
+      <div class="menu-wrap">
+        <button class="menu-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="sort-menu">Sort: Newest</button>
+        <ul class="menu" id="sort-menu" role="menu" hidden>
+          <li role="menuitemradio" aria-checked="true" tabindex="-1">Newest</li>
+          <li role="menuitemradio" aria-checked="false" tabindex="-1">Oldest</li>
+          <li role="menuitemradio" aria-checked="false" tabindex="-1">Most liked</li>
+          <li role="menuitemradio" aria-checked="false" tabindex="-1">A to Z</li>
+        </ul>
+      </div>`,
+    css: code`
+      .menu-wrap {
+        position: relative;
+        align-self: start;
+        margin-top: 56px;
+        font-family: system-ui, sans-serif;
+      }
+      .menu-btn {
+        padding: 11px 18px;
+        border: 1px solid #ffffff2e;
+        border-radius: 999px;
+        background: #ffffff0a;
+        color: #ededef;
+        font: 500 14px system-ui, sans-serif;
+        cursor: pointer;
+      }
+      .menu-btn::after { content: "▾"; margin-left: 8px; color: #85858f; }
+      .menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 50%;
+        min-width: 180px;
+        margin: 0;
+        padding: 6px;
+        list-style: none;
+        border: 1px solid #ffffff1f;
+        border-radius: 14px;
+        background: #1c1c1f;
+        box-shadow: 0 16px 40px #00000080;
+        transform: translateX(-50%);
+      }
+      .menu li {
+        padding: 9px 12px;
+        border-radius: 8px;
+        color: #d4d4d8;
+        font-size: 14px;
+        cursor: pointer;
+        outline: none;
+      }
+      .menu li:hover,
+      .menu li:focus { background: #27272a; color: #ededef; }
+      .menu li[aria-checked="true"]::after { content: "✓"; float: right; color: #e97949; }`,
+    js: code`
+      const btn = document.querySelector(".menu-btn");
+      const menu = document.querySelector(".menu");
+      const items = [...menu.querySelectorAll("li")];
+
+      function openMenu(index) {
+        menu.hidden = false;
+        btn.setAttribute("aria-expanded", "true");
+        menu.animate(
+          [
+            { opacity: 0, transform: "translateX(-50%) translateY(-6px) scale(.97)" },
+            { opacity: 1, transform: "translateX(-50%)" }
+          ],
+          { duration: 180, easing: "ease-out" }
+        );
+        items[index].focus();
+      }
+
+      function closeMenu(returnFocus) {
+        menu.hidden = true;
+        btn.setAttribute("aria-expanded", "false");
+        if (returnFocus) btn.focus();
+      }
+
+      function choose(item) {
+        items.forEach(i => i.setAttribute("aria-checked", String(i === item)));
+        btn.textContent = "Sort: " + item.textContent;
+        closeMenu(true);
+      }
+
+      btn.addEventListener("click", () => {
+        if (menu.hidden) openMenu(items.findIndex(i => i.getAttribute("aria-checked") === "true"));
+        else closeMenu(false);
+      });
+
+      btn.addEventListener("keydown", e => {
+        if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+        e.preventDefault();
+        openMenu(e.key === "ArrowDown" ? 0 : items.length - 1);
+      });
+
+      menu.addEventListener("click", e => {
+        const item = e.target.closest("li");
+        if (item) choose(item);
+      });
+
+      menu.addEventListener("keydown", e => {
+        const i = items.indexOf(document.activeElement);
+        if (e.key === "ArrowDown") items[(i + 1) % items.length].focus();
+        else if (e.key === "ArrowUp") items[(i - 1 + items.length) % items.length].focus();
+        else if (e.key === "Home") items[0].focus();
+        else if (e.key === "End") items[items.length - 1].focus();
+        else if (e.key === "Enter" || e.key === " ") choose(items[i]);
+        else if (e.key === "Escape") closeMenu(true);
+        else if (e.key === "Tab") return closeMenu(false);
+        else return;
+        e.preventDefault();
+      });
+
+      // A press anywhere outside closes it.
+      document.addEventListener("pointerdown", e => {
+        if (!menu.hidden && !e.target.closest(".menu-wrap")) closeMenu(false);
+      });`
+  },
+  {
+    title: "Speed dial",
+    category: "Buttons",
+    desc: "A floating button that fans out its actions with a staggered spring.",
+    html: code`
+      <div class="dial">
+        <div class="dial-actions" id="dial-actions">
+          <button class="dial-item">Share</button>
+          <button class="dial-item">Duplicate</button>
+          <button class="dial-item">Archive</button>
+        </div>
+        <button class="dial-main" aria-expanded="false" aria-controls="dial-actions" aria-label="More actions">+</button>
+      </div>`,
+    css: code`
+      .dial { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+      .dial-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+      .dial-item {
+        padding: 9px 18px;
+        border: 1px solid #ffffff26;
+        border-radius: 999px;
+        background: #1c1c1f;
+        color: #ededef;
+        font: 500 14px system-ui, sans-serif;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(18px) scale(.85);
+        transition: opacity .2s, transform .4s cubic-bezier(.34, 1.56, .64, 1), background-color .2s;
+      }
+      .dial-item:hover { background: #27272a; }
+      .dial.open .dial-item { opacity: 1; transform: none; }
+      .dial-main {
+        width: 56px;
+        height: 56px;
+        border: 0;
+        border-radius: 50%;
+        background: #e97949;
+        color: #0a0a0b;
+        font: 300 32px/1 system-ui, sans-serif;
+        cursor: pointer;
+        transition: transform .4s cubic-bezier(.34, 1.56, .64, 1);
+      }
+      .dial.open .dial-main { transform: rotate(135deg); }`,
+    js: code`
+      const dial = document.querySelector(".dial");
+      const main = dial.querySelector(".dial-main");
+      const actions = dial.querySelector(".dial-actions");
+      const items = [...actions.children];
+
+      function toggle(open) {
+        dial.classList.toggle("open", open);
+        main.setAttribute("aria-expanded", String(open));
+        actions.inert = !open; // closed actions can't be focused, clicked or read out
+        items.forEach((item, i) => {
+          // Items nearest the main button move first when opening and last when closing.
+          const order = open ? items.length - 1 - i : i;
+          item.style.transitionDelay = order * 45 + "ms";
+        });
+      }
+
+      main.addEventListener("click", () => toggle(!dial.classList.contains("open")));
+
+      items.forEach(item => item.addEventListener("click", () => {
+        toggle(false);
+        main.focus();
+      }));
+
+      document.addEventListener("keydown", e => {
+        if (e.key === "Escape" && dial.classList.contains("open")) {
+          toggle(false);
+          main.focus();
+        }
+      });
+
+      document.addEventListener("pointerdown", e => {
+        if (!dial.contains(e.target)) toggle(false);
+      });
+
+      toggle(false);`
+  },
+  {
+    title: "Reveal lens",
+    category: "Cards",
+    desc: "A clip-path circle follows the pointer and shows the layer underneath.",
+    html: code`
+      <div class="lens">
+        <div class="layer base">
+          <h3>Plain surface</h3>
+          <p>Move your pointer over the card.</p>
+        </div>
+        <div class="layer xray" aria-hidden="true">
+          <h3>Hidden layer</h3>
+          <p>A clip-path circle follows the pointer.</p>
+        </div>
+      </div>`,
+    css: code`
+      @property --r {
+        syntax: "<length>";
+        inherits: true;
+        initial-value: 0px;
+      }
+      .lens {
+        position: relative;
+        width: 280px;
+        height: 180px;
+        border-radius: 18px;
+        overflow: hidden;
+        touch-action: none;
+      }
+      .lens.on { --r: 70px; }
+      .layer {
+        box-sizing: border-box;
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 22px;
+        border-radius: inherit;
+        font-family: system-ui, sans-serif;
+      }
+      .layer h3 { margin: 0 0 4px; font-size: 20px; }
+      .layer p { margin: 0; font-size: 13px; }
+      .base { border: 1px solid #ffffff1a; background: #1c1c1f; color: #ededef; }
+      .base p { color: #a1a1aa; }
+      .xray {
+        background: repeating-linear-gradient(45deg, #0a0a0b1a 0 10px, transparent 10px 20px), #e97949;
+        color: #0a0a0b;
+        clip-path: circle(var(--r) at var(--x, 50%) var(--y, 50%));
+        transition: --r .4s cubic-bezier(.16, 1, .3, 1);
+      }`,
+    js: code`
+      const lens = document.querySelector(".lens");
+
+      function track(e) {
+        const r = lens.getBoundingClientRect();
+        lens.style.setProperty("--x", e.clientX - r.left + "px");
+        lens.style.setProperty("--y", e.clientY - r.top + "px");
+      }
+
+      lens.addEventListener("pointerenter", e => {
+        track(e);
+        lens.classList.add("on"); // the radius animates open through the registered --r property
+      });
+      lens.addEventListener("pointermove", track);
+      lens.addEventListener("pointerleave", () => lens.classList.remove("on"));`
+  },
+  {
+    title: "Range slider",
+    category: "Inputs",
+    desc: "A native range input with a filled track and a value bubble that rides the thumb.",
+    html: code`
+      <div class="range">
+        <output class="bubble">40</output>
+        <input type="range" min="0" max="100" value="40" aria-label="Volume">
+      </div>`,
+    css: code`
+      .range {
+        --p: 0.4;
+        position: relative;
+        width: 260px;
+        padding-top: 46px;
+      }
+      .range input {
+        -webkit-appearance: none;
+        appearance: none;
+        display: block;
+        width: 100%;
+        height: 6px;
+        margin: 0;
+        border-radius: 999px;
+        background: linear-gradient(to right, #e97949 calc(var(--p) * 100%), #27272a 0);
+        cursor: pointer;
+        outline: none;
+      }
+      .range input::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        box-sizing: border-box;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #0d0d0f;
+        border-radius: 50%;
+        background: #ededef;
+        box-shadow: 0 0 0 1px #ffffff40;
+        transition: transform .2s;
+      }
+      .range input::-moz-range-thumb {
+        box-sizing: border-box;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #0d0d0f;
+        border-radius: 50%;
+        background: #ededef;
+      }
+      .range input::-moz-range-track { background: transparent; }
+      .range input:active::-webkit-slider-thumb { transform: scale(1.15); }
+      .range input:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px #e9794980; }
+      .range input:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px #e9794980; }
+      .bubble {
+        position: absolute;
+        top: 0;
+        left: calc(10px + var(--p) * (100% - 20px));
+        padding: 5px 10px;
+        border-radius: 8px;
+        background: #e97949;
+        color: #0a0a0b;
+        font: 600 13px system-ui, sans-serif;
+        font-variant-numeric: tabular-nums;
+        transform: translateX(-50%);
+      }
+      .bubble::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: -4px;
+        width: 8px;
+        height: 8px;
+        background: inherit;
+        transform: translateX(-50%) rotate(45deg);
+      }`,
+    js: code`
+      const input = document.querySelector(".range input");
+      const bubble = document.querySelector(".bubble");
+
+      function update() {
+        const p = (input.value - input.min) / (input.max - input.min);
+        input.parentElement.style.setProperty("--p", p); // drives both the fill and the bubble
+        bubble.textContent = input.value;
+      }
+
+      input.addEventListener("input", update);
+      update();`
+  },
+  {
+    title: "Smart tooltip",
+    category: "Feedback",
+    desc: "Flips below when there's no room above and never leaves the frame.",
+    html: code`
+      <div class="tip-demo">
+        <button class="tip-trigger" data-tip="No room above, so I flip below.">Top edge</button>
+        <button class="tip-trigger" data-tip="Centered above my button.">Middle</button>
+        <button class="tip-trigger" data-tip="Clamped so I never leave the frame.">Right edge</button>
+      </div>
+      <div class="tip" id="tip" role="tooltip" hidden></div>`,
+    css: code`
+      .tip-demo {
+        position: fixed;
+        inset: 14px;
+        display: grid;
+        grid-template: 1fr 1fr 1fr / 1fr 1fr 1fr;
+      }
+      .tip-trigger {
+        padding: 9px 14px;
+        border: 1px solid #ffffff2e;
+        border-radius: 999px;
+        background: #ffffff0a;
+        color: #ededef;
+        font: 500 13px system-ui, sans-serif;
+        cursor: pointer;
+      }
+      .tip-trigger:nth-child(1) { grid-area: 1 / 1; place-self: start; }
+      .tip-trigger:nth-child(2) { grid-area: 2 / 2; place-self: center; }
+      .tip-trigger:nth-child(3) { grid-area: 3 / 3; place-self: end; }
+      .tip {
+        position: fixed;
+        max-width: 190px;
+        padding: 8px 11px;
+        border-radius: 8px;
+        background: #ededef;
+        color: #0a0a0b;
+        font: 13px/1.4 system-ui, sans-serif;
+        pointer-events: none;
+      }
+      .tip::after {
+        content: "";
+        position: absolute;
+        left: var(--ax);
+        width: 8px;
+        height: 8px;
+        background: inherit;
+        transform: translateX(-50%) rotate(45deg);
+      }
+      .tip[data-side="top"]::after { bottom: -4px; }
+      .tip[data-side="bottom"]::after { top: -4px; }`,
+    js: code`
+      const tip = document.getElementById("tip");
+      const GAP = 8;
+      const MARGIN = 8;
+
+      function show(trigger) {
+        tip.textContent = trigger.dataset.tip;
+        tip.hidden = false;
+        trigger.setAttribute("aria-describedby", "tip");
+        const t = trigger.getBoundingClientRect();
+        const w = tip.offsetWidth;
+        const h = tip.offsetHeight;
+
+        // Prefer above; flip below when there isn't room.
+        const above = t.top - GAP - h >= MARGIN;
+        const top = above ? t.top - GAP - h : t.bottom + GAP;
+        // Center on the trigger, then clamp inside the viewport.
+        const left = Math.min(Math.max(t.left + t.width / 2 - w / 2, MARGIN), innerWidth - w - MARGIN);
+
+        tip.style.top = top + "px";
+        tip.style.left = left + "px";
+        tip.style.setProperty("--ax", t.left + t.width / 2 - left + "px"); // the arrow stays on the trigger
+        tip.dataset.side = above ? "top" : "bottom";
+        tip.animate(
+          [{ opacity: 0, transform: "translateY(" + (above ? 4 : -4) + "px)" }, { opacity: 1, transform: "none" }],
+          { duration: 150, easing: "ease-out" }
+        );
+      }
+
+      function hide(trigger) {
+        tip.hidden = true;
+        trigger.removeAttribute("aria-describedby");
+      }
+
+      document.querySelectorAll(".tip-trigger").forEach(trigger => {
+        trigger.addEventListener("pointerenter", () => show(trigger));
+        trigger.addEventListener("pointerleave", () => hide(trigger));
+        trigger.addEventListener("focus", () => show(trigger));
+        trigger.addEventListener("blur", () => hide(trigger));
+      });
+
+      document.addEventListener("keydown", e => {
+        if (e.key === "Escape") tip.hidden = true;
+      });`
+  },
+  {
+    title: "Command palette",
+    category: "Navigation",
+    desc: "Ctrl K opens it, typing filters, the arrow keys pick and Enter runs.",
+    html: code`
+      <div class="cmd-demo">
+        <button class="cmd-open">Search commands <kbd>Ctrl K</kbd></button>
+        <p class="cmd-result" role="status"></p>
+      </div>
+      <div class="palette" hidden>
+        <div class="palette-box" role="dialog" aria-modal="true" aria-label="Command palette">
+          <input class="palette-input" role="combobox" aria-expanded="true" aria-controls="cmd-list" aria-autocomplete="list" placeholder="Type a command">
+          <ul class="palette-list" id="cmd-list" role="listbox"></ul>
+        </div>
+      </div>`,
+    css: code`
+      .cmd-demo { display: grid; justify-items: center; gap: 12px; font-family: system-ui, sans-serif; }
+      .cmd-open {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px 10px 18px;
+        border: 1px solid #ffffff2e;
+        border-radius: 999px;
+        background: #ffffff0a;
+        color: #a1a1aa;
+        font: 14px system-ui, sans-serif;
+        cursor: pointer;
+      }
+      .cmd-open kbd {
+        padding: 3px 7px;
+        border: 1px solid #ffffff26;
+        border-radius: 6px;
+        color: #ededef;
+        font: 12px ui-monospace, monospace;
+      }
+      .cmd-result { min-height: 20px; margin: 0; color: #e97949; font-size: 13px; }
+      .palette {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        justify-items: center;
+        align-items: start;
+        padding-top: 20px;
+        background: #0a0a0bcc;
+      }
+      .palette[hidden] { display: none; }
+      .palette-box {
+        width: 280px;
+        border: 1px solid #ffffff26;
+        border-radius: 14px;
+        background: #18181b;
+        box-shadow: 0 20px 50px #000000aa;
+        overflow: hidden;
+      }
+      .palette-input {
+        box-sizing: border-box;
+        width: 100%;
+        height: 46px;
+        padding: 0 16px;
+        border: 0;
+        border-bottom: 1px solid #ffffff1a;
+        background: none;
+        color: #ededef;
+        font: 15px system-ui, sans-serif;
+        outline: none;
+      }
+      .palette-input::placeholder { color: #85858f; }
+      .palette-list { margin: 0; padding: 6px; list-style: none; }
+      .palette-list li {
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: #d4d4d8;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .palette-list li[aria-selected="true"] { background: #e97949; color: #0a0a0b; }
+      .palette-list .empty { color: #85858f; cursor: default; }`,
+    js: code`
+      const commands = ["New file", "Open recent", "Toggle theme", "Split editor", "Go to line", "Copy link"];
+      const openBtn = document.querySelector(".cmd-open");
+      const result = document.querySelector(".cmd-result");
+      const palette = document.querySelector(".palette");
+      const input = palette.querySelector(".palette-input");
+      const list = palette.querySelector(".palette-list");
+      let matches = [];
+      let active = 0;
+
+      function render() {
+        const q = input.value.trim().toLowerCase();
+        matches = commands.filter(c => c.toLowerCase().includes(q));
+        list.innerHTML = matches.length ? "" : '<li class="empty">No matching commands</li>';
+        matches.forEach((c, i) => {
+          const li = document.createElement("li");
+          li.id = "cmd-" + i;
+          li.setAttribute("role", "option");
+          li.textContent = c;
+          li.addEventListener("pointerenter", () => highlight(i));
+          li.addEventListener("click", () => run(c));
+          list.append(li);
+        });
+        highlight(0);
+      }
+
+      function highlight(i) {
+        active = i;
+        if (!matches.length) return input.removeAttribute("aria-activedescendant");
+        [...list.children].forEach((li, j) => li.setAttribute("aria-selected", String(j === i)));
+        input.setAttribute("aria-activedescendant", "cmd-" + i);
+      }
+
+      function openPalette() {
+        palette.hidden = false;
+        input.value = "";
+        render();
+        input.focus();
+        palette.querySelector(".palette-box").animate(
+          [{ opacity: 0, transform: "scale(.96) translateY(-6px)" }, { opacity: 1, transform: "none" }],
+          { duration: 180, easing: "ease-out" }
+        );
+      }
+
+      function closePalette() {
+        palette.hidden = true;
+        openBtn.focus();
+      }
+
+      function run(command) {
+        closePalette();
+        result.textContent = "Ran: " + command;
+      }
+
+      input.addEventListener("input", render);
+      input.addEventListener("keydown", e => {
+        const n = matches.length;
+        if (e.key === "ArrowDown" && n) highlight((active + 1) % n);
+        else if (e.key === "ArrowUp" && n) highlight((active - 1 + n) % n);
+        else if (e.key === "Enter" && n) run(matches[active]);
+        else if (e.key === "Escape") closePalette();
+        else if (e.key !== "Tab") return; // Tab stays inside the palette
+        e.preventDefault();
+      });
+
+      openBtn.addEventListener("click", openPalette);
+
+      palette.addEventListener("pointerdown", e => {
+        if (e.target === palette) closePalette();
+      });
+
+      document.addEventListener("keydown", e => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+          e.preventDefault();
+          if (palette.hidden) openPalette();
+          else closePalette();
+        }
+      });`
+  },
+  {
+    title: "Resend timer",
+    category: "Buttons",
+    desc: "A cooldown button that counts down from the clock, not from ticks.",
+    html: code`
+      <div class="resend-demo">
+        <p>We sent a 6-digit code to your email.</p>
+        <button class="resend">Resend code</button>
+      </div>`,
+    css: code`
+      .resend-demo { display: grid; justify-items: center; gap: 14px; font-family: system-ui, sans-serif; }
+      .resend-demo p { margin: 0; color: #a1a1aa; font-size: 14px; }
+      .resend {
+        position: relative;
+        overflow: hidden;
+        min-width: 170px;
+        padding: 13px 24px;
+        border: 1px solid #ffffff2e;
+        border-radius: 999px;
+        background: #ffffff0a;
+        color: #ededef;
+        font: 500 15px system-ui, sans-serif;
+        font-variant-numeric: tabular-nums;
+        cursor: pointer;
+      }
+      .resend[aria-disabled="true"] { color: #85858f; cursor: not-allowed; }
+      .resend::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: calc(var(--p, 0) * 100%);
+        height: 2px;
+        background: #e97949;
+        transition: width .25s linear;
+      }`,
+    js: code`
+      const btn = document.querySelector(".resend");
+      const SECONDS = 10;
+
+      btn.addEventListener("click", () => {
+        if (btn.getAttribute("aria-disabled") === "true") return;
+        const end = Date.now() + SECONDS * 1000;
+        // aria-disabled instead of disabled, so keyboard focus stays on the button.
+        btn.setAttribute("aria-disabled", "true");
+
+        // Read the clock on every tick instead of counting ticks, so a throttled tab stays accurate.
+        const tick = () => {
+          const left = Math.ceil((end - Date.now()) / 1000);
+          if (left > 0) {
+            btn.textContent = "Resend in " + left + "s";
+            btn.style.setProperty("--p", (end - Date.now()) / (SECONDS * 1000));
+            return;
+          }
+          clearInterval(timer);
+          btn.removeAttribute("aria-disabled");
+          btn.textContent = "Resend code";
+          btn.style.removeProperty("--p");
+        };
+        const timer = setInterval(tick, 250);
+        tick();
+      });`
+  },
+  {
+    title: "Sortable list",
+    category: "Cards",
+    desc: "Drag to reorder while the other items slide out of the way. Arrow keys work too.",
+    html: code`
+      <div class="sort-demo">
+        <ul class="sortable" aria-label="Tasks">
+          <li tabindex="0">Design review</li>
+          <li tabindex="0">Write tests</li>
+          <li tabindex="0">Ship the release</li>
+          <li tabindex="0">Celebrate</li>
+        </ul>
+        <p class="sort-hint">Drag to reorder, or focus a task and press ↑ or ↓.</p>
+      </div>`,
+    css: code`
+      .sort-demo { display: grid; gap: 12px; width: 260px; font-family: system-ui, sans-serif; }
+      .sortable {
+        position: relative;
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .sortable li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border: 1px solid #ffffff1a;
+        border-radius: 12px;
+        background: #1c1c1f;
+        color: #ededef;
+        font-size: 14px;
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+      }
+      .sortable li::after { content: "⋮⋮"; color: #63636b; letter-spacing: -3px; }
+      .sortable li:focus-visible { outline: 2px solid #e97949; outline-offset: 2px; }
+      .sortable li.dragging {
+        position: relative;
+        z-index: 1;
+        border-color: #e97949;
+        background: #27272a;
+        box-shadow: 0 12px 28px #00000080;
+        cursor: grabbing;
+      }
+      .sort-hint { margin: 0; color: #85858f; font-size: 12px; text-align: center; }`,
+    js: code`
+      const list = document.querySelector(".sortable");
+
+      // Move item before ref (null = to the end) and slide the others to their new spots (FLIP).
+      function place(item, ref, animateItem) {
+        const moving = [...list.children].filter(li => animateItem || li !== item);
+        const first = new Map(moving.map(li => [li, li.getBoundingClientRect().top]));
+        list.insertBefore(item, ref);
+        moving.forEach(li => {
+          li.getAnimations().forEach(a => a.cancel());
+          const dy = first.get(li) - li.getBoundingClientRect().top;
+          if (dy) li.animate([{ transform: "translateY(" + dy + "px)" }, { transform: "none" }], { duration: 200, easing: "ease-out" });
+        });
+      }
+
+      list.addEventListener("pointerdown", e => {
+        const item = e.target.closest("li");
+        if (!item) return;
+        e.preventDefault();
+        // Capture on the list: the item itself gets moved around the DOM, which would drop its capture.
+        list.setPointerCapture(e.pointerId);
+        item.classList.add("dragging");
+        let startY = e.clientY;
+
+        const move = ev => {
+          item.style.transform = "translateY(" + (ev.clientY - startY) + "px)";
+          const r = item.getBoundingClientRect();
+          const mid = r.top + r.height / 2;
+          const prev = item.previousElementSibling;
+          const next = item.nextElementSibling;
+          const before = item.offsetTop;
+          if (prev && mid < prev.getBoundingClientRect().top + prev.offsetHeight / 2) place(item, prev);
+          else if (next && mid > next.getBoundingClientRect().top + next.offsetHeight / 2) place(item, next.nextElementSibling);
+          else return;
+          startY += item.offsetTop - before; // keep the item under the pointer after it jumps in the list
+          item.style.transform = "translateY(" + (ev.clientY - startY) + "px)";
+        };
+        const end = () => {
+          list.removeEventListener("pointermove", move);
+          list.removeEventListener("pointerup", end);
+          list.removeEventListener("pointercancel", end);
+          item.classList.remove("dragging");
+          const from = item.style.transform || "none";
+          item.style.transform = "";
+          item.animate([{ transform: from }, { transform: "none" }], { duration: 200, easing: "ease-out" });
+          item.focus({ preventScroll: true });
+        };
+        list.addEventListener("pointermove", move);
+        list.addEventListener("pointerup", end);
+        list.addEventListener("pointercancel", end);
+      });
+
+      list.addEventListener("keydown", e => {
+        const item = e.target.closest("li");
+        if (!item) return;
+        if (e.key === "ArrowUp" && item.previousElementSibling) place(item, item.previousElementSibling, true);
+        else if (e.key === "ArrowDown" && item.nextElementSibling) place(item, item.nextElementSibling.nextElementSibling, true);
+        else return;
+        e.preventDefault();
+        item.focus(); // moving a node in the DOM drops its focus
+      });`
+  },
+  {
+    title: "Character counter",
+    category: "Inputs",
+    desc: "A ring fills as you type and warns near the limit. An emoji counts as one.",
+    html: code`
+      <div class="counter">
+        <textarea rows="4" placeholder="Write a short update" aria-label="Update" aria-describedby="count-left"></textarea>
+        <div class="counter-foot">
+          <span class="left" id="count-left">120 left</span>
+          <svg class="ring" viewBox="0 0 36 36" aria-hidden="true">
+            <circle cx="18" cy="18" r="15"></circle>
+            <circle class="bar" cx="18" cy="18" r="15"></circle>
+          </svg>
+        </div>
+      </div>`,
+    css: code`
+      .counter { width: 300px; font-family: system-ui, sans-serif; }
+      .counter textarea {
+        box-sizing: border-box;
+        display: block;
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #ffffff26;
+        border-radius: 14px;
+        background: #141416;
+        color: #ededef;
+        font: 14px/1.5 system-ui, sans-serif;
+        resize: none;
+        outline: none;
+        transition: border-color .2s;
+      }
+      .counter textarea:focus { border-color: #e97949; }
+      .counter textarea::placeholder { color: #85858f; }
+      .counter-foot {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 10px;
+        color: #a1a1aa;
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+      }
+      .ring { width: 28px; height: 28px; transform: rotate(-90deg); }
+      .ring circle { fill: none; stroke: #27272a; stroke-width: 3.5; }
+      .ring .bar { stroke: #a1a1aa; stroke-linecap: round; transition: stroke-dashoffset .2s, stroke .2s; }
+      .ring[data-state="near"] .bar,
+      .ring[data-state="over"] .bar { stroke: #e97949; }
+      .counter:has(.ring[data-state="over"]) .left { color: #e97949; }`,
+    js: code`
+      const LIMIT = 120;
+      const area = document.querySelector(".counter textarea");
+      const left = document.querySelector(".left");
+      const ring = document.querySelector(".ring");
+      const bar = ring.querySelector(".bar");
+      const circumference = 2 * Math.PI * 15;
+      const graphemes = new Intl.Segmenter();
+      bar.style.strokeDasharray = circumference;
+
+      function update() {
+        const used = [...graphemes.segment(area.value)].length; // what people see as characters
+        const remaining = LIMIT - used;
+        bar.style.strokeDashoffset = circumference * (1 - Math.min(used / LIMIT, 1));
+        bar.style.opacity = used ? 1 : 0; // hide the round cap's dot when empty
+        left.textContent = remaining >= 0 ? remaining + " left" : -remaining + " over";
+        ring.dataset.state = remaining < 0 ? "over" : remaining <= 20 ? "near" : "";
+      }
+
+      area.addEventListener("input", update);
+      update();`
+  },
+  {
+    title: "Marquee",
+    category: "Text",
+    desc: "A seamless ticker that eases down on hover and holds still for reduced motion.",
+    html: code`
+      <div class="marquee">
+        <div class="marquee-track">
+          <span>Buttons</span>
+          <span>Cards</span>
+          <span>Inputs</span>
+          <span>Text</span>
+          <span>Feedback</span>
+          <span>Navigation</span>
+        </div>
+      </div>`,
+    css: code`
+      .marquee {
+        width: 100vw;
+        overflow: hidden;
+        -webkit-mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+        mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+      }
+      .marquee-track { display: flex; width: max-content; }
+      .marquee-track span {
+        padding: 0 20px;
+        color: #ededef;
+        font: 700 36px system-ui, sans-serif;
+        letter-spacing: -.02em;
+        white-space: nowrap;
+      }
+      .marquee-track span:nth-child(3n + 1) { color: #e97949; }`,
+    js: code`
+      const marquee = document.querySelector(".marquee");
+      const track = marquee.querySelector(".marquee-track");
+
+      // Duplicate the items so the loop has no gap, then slide by exactly one copy.
+      [...track.children].forEach(item => {
+        const copy = item.cloneNode(true);
+        copy.setAttribute("aria-hidden", "true");
+        track.append(copy);
+      });
+
+      const anim = track.animate(
+        [{ transform: "translateX(0)" }, { transform: "translateX(-50%)" }],
+        { duration: 14000, iterations: Infinity }
+      );
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) anim.pause();
+
+      // Ease the speed toward a target instead of stopping dead on hover.
+      let target = 1;
+      let easing = false;
+      function ease() {
+        const rate = anim.playbackRate + (target - anim.playbackRate) * 0.12;
+        anim.playbackRate = Math.abs(rate - target) < 0.01 ? target : rate;
+        easing = anim.playbackRate !== target;
+        if (easing) requestAnimationFrame(ease);
+      }
+      function slowTo(rate) {
+        target = rate;
+        if (!easing) ease();
+      }
+
+      marquee.addEventListener("pointerenter", () => slowTo(0.15));
+      marquee.addEventListener("pointerleave", () => slowTo(1));`
+  }
+];
+
+// Tag for snippet code: backslashes stay as typed, \` and \${ turn into ` and ${, shared indentation is stripped.
+function code(strings) {
+  return dedent(strings.raw[0].replace(/\\(`|\$\{)/g, "$1"));
+}
+
+function dedent(s) {
+  const lines = s.replace(/^\s*\n/, "").trimEnd().split("\n");
+  const pad = Math.min(...lines.filter(l => l.trim()).map(l => l.search(/\S/)));
+  return lines.map(l => l.slice(pad)).join("\n");
+}
+
+snippets.forEach(s => ["html", "css", "js"].forEach(k => s[k] = s[k] || ""));
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Card widths: pairs alternate wide/narrow (7+5, then 5+7); an odd last card takes the full row.
+const spanFor = (i, n) => i === n - 1 && i % 2 === 0 ? "full" : i % 4 === 0 || i % 4 === 3 ? "7" : "5";
+
+// WCAG 2 contrast: relative luminance of a #rrggbb color, and the ratio between two colors.
+function luminance(hex) {
+  const [r, g, b] = hex.match(/\w\w/g).map(h => {
+    const c = parseInt(h, 16) / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+const contrast = (a, b) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+// Round down: 4.49:1 must never be shown as a passing 4.5.
+const floor2 = n => (Math.floor(n * 100) / 100).toFixed(2);
+
+// Search: every word has to appear in the title, description or category.
+// Long words match on their stem, so "loading" also finds "loader".
+const stem = w => (w.length > 5 ? w.slice(0, -3) : w);
+const matchesQuery = (s, q) => q.toLowerCase().split(/\s+/).filter(Boolean)
+  .every(w => `${s.title} ${s.desc} ${s.category}`.toLowerCase().includes(stem(w)));
+
+console.assert(
+  dedent("\n    a\n      b\n  ") === "a\n  b" &&
+  code`
+    /\d\${1}/` === "/\\d${1}/" &&
+  [0, 1, 2, 3, 4].map(i => spanFor(i, 5)).join() === "7,5,5,7,full" &&
+  floor2(contrast("#000000", "#ffffff")) === "21.00" && floor2(4.499) === "4.49" &&
+  matchesQuery({ title: "Skeleton loader", desc: "", category: "Feedback" }, "loading") &&
+  !matchesQuery({ title: "Tilt card", desc: "", category: "Cards" }, "button"),
+  "self-check failed"
+);
+
+// Every demo sits on a dotted canvas, like a design tool.
+const STAGE = ":root{color-scheme:dark}html{height:100%;overflow:hidden;background:radial-gradient(circle at center,#ffffff12 1px,transparent 1.5px) 0 0/20px 20px,radial-gradient(90% 70% at 50% 0%,#ffffff0d,transparent 70%) #0d0d0f}body{margin:0;min-height:100%;display:grid;place-items:center;font-family:system-ui,sans-serif;color:#ededef;-webkit-font-smoothing:antialiased}";
+const demo = s => `<!doctype html><style>${STAGE}${s.css}</style>${s.html}<script>${s.js}<\/script>`;
+
+// Hero: a collage of live demos around the headline. Each tile opens its code.
+const FEATURED = ["Tilt card", "Stacked card deck", "Code input", "Dock", "Typewriter", "Carousel"];
+const collage = $("#collage");
+collage.innerHTML = FEATURED.map((title, n) => `
+  <div class="tile t${n + 1}" style="--n:${n}">
+    <div class="tile-float">
+      <iframe title="${esc(title)} preview" sandbox="allow-scripts" inert></iframe>
+      <button class="tile-open" data-open="${snippets.findIndex(s => s.title === title)}" aria-label="Open ${esc(title)}"><span class="tile-label">${esc(title)}</span></button>
+    </div>
+  </div>`).join("");
+collage.querySelectorAll("iframe").forEach((f, n) => (f.srcdoc = demo(snippets.find(s => s.title === FEATURED[n]))));
+
+// Tiles drift a little with the pointer, deeper tiles further.
+const hero = $(".hero");
+if (!reduceMotion && matchMedia("(pointer: fine)").matches) {
+  hero.addEventListener("pointermove", e => {
+    const r = hero.getBoundingClientRect();
+    hero.style.setProperty("--mx", ((e.clientX - r.left) / r.width - 0.5) * 2);
+    hero.style.setProperty("--my", ((e.clientY - r.top) / r.height - 0.5) * 2);
+  });
+}
+
+$("#badge-count").textContent = snippets.length;
+
+// In-page links scroll with JavaScript, so they also work where fragment navigation is blocked (some previews).
+document.addEventListener("click", e => {
+  const a = e.target.closest('a[href^="#"]');
+  if (!a) return;
+  const id = a.getAttribute("href").slice(1);
+  const target = document.getElementById(id);
+  if (!target) return;
+  e.preventDefault();
+  const behavior = reduceMotion ? "auto" : "smooth";
+  if (id === "top") scrollTo({ top: 0, behavior }); // the hero starts above 0 (it tucks under the nav)
+  else target.scrollIntoView({ behavior });
+  try { history.replaceState(null, "", "#" + id); } catch {}
+});
+
+// Grid
+const grid = $("#grid");
+grid.innerHTML = snippets.map((s, i) => `
+  <article class="card reveal" data-category="${esc(s.category)}">
+    <iframe title="${esc(s.title)} demo" sandbox="allow-scripts"></iframe>
+    <div class="card-body">
+      <div>
+        <h3>${esc(s.title)}</h3>
+        <p class="desc">${esc(s.desc)}</p>
+        <p class="meta">${esc(s.category)} · ${s.js.split("\n").length} lines of JS</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" data-open="${i}">View code</button>
+    </div>
+  </article>`).join("");
+const cards = [...grid.children];
+
+// Start each demo only when its card nears the viewport, so 40+ iframes don't all boot at once.
+const frames = cards.map(c => c.querySelector("iframe"));
+const boot = f => f.srcdoc = demo(snippets[frames.indexOf(f)]);
+if ("IntersectionObserver" in window) {
+  const lazy = new IntersectionObserver(entries => entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    boot(e.target);
+    lazy.unobserve(e.target);
+  }), { rootMargin: "600px 0px" });
+  frames.forEach(f => lazy.observe(f));
+} else {
+  frames.forEach(boot);
+}
+
+// What the grid shows: the chosen category and search, and for plain "All" only the first PAGE cards.
+const PAGE = 12;
+const more = $("#more");
+let category = "All";
+let query = "";
+let showAll = false;
+
+function layout() {
+  const matching = cards.filter((c, i) =>
+    (category === "All" || c.dataset.category === category) && matchesQuery(snippets[i], query));
+  const shown = category === "All" && !query && !showAll ? matching.slice(0, PAGE) : matching;
+  cards.forEach(c => (c.hidden = !shown.includes(c)));
+  more.parentElement.hidden = shown.length === matching.length;
+  more.textContent = `Show all ${matching.length} snippets`;
+  $("#results").hidden = !query;
+  $("#results-text").textContent = matching.length
+    ? `${matching.length} ${matching.length === 1 ? "snippet matches" : "snippets match"} “${query}”.`
+    : `Nothing matches “${query}”. Try a broader word, like “card”.`;
+  shown.forEach((c, i) => {
+    c.dataset.span = spanFor(i, shown.length);
+    c.style.setProperty("--i", i % 2);
+  });
+  return shown;
+}
+
+// Replay the entrance so a change in the grid reads as a change.
+function replay(list) {
+  list.forEach((c, i) => {
+    c.style.setProperty("--i", Math.min(i, 6));
+    c.classList.remove("in");
+    void c.offsetWidth;
+    c.classList.add("in");
+  });
+}
+
+layout();
+
+more.addEventListener("click", () => {
+  showAll = true;
+  // The new cards fade in through the scroll-reveal observer; focus moves to the first of them.
+  layout()[PAGE].querySelector("[data-open]").focus({ preventScroll: true });
+});
+
+// Filters
+const filters = $("#filters");
+const cats = ["All", ...new Set(snippets.map(s => s.category))];
+filters.innerHTML = cats.map((c, i) => {
+  const n = c === "All" ? snippets.length : snippets.filter(s => s.category === c).length;
+  return `<button class="chip" aria-pressed="${i === 0}" data-cat="${esc(c)}">${esc(c)}<span>${n}</span></button>`;
+}).join("");
+filters.addEventListener("click", e => {
+  const b = e.target.closest(".chip");
+  if (!b) return;
+  filters.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x === b));
+  category = b.dataset.cat;
+  replay(layout());
+});
+
+// Search from the hero prompt
+const promptInput = $("#prompt-input");
+function search(q) {
+  query = q.trim();
+  category = "All";
+  filters.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.cat === "All"));
+  replay(layout());
+  $("#snippets").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
+}
+$("#prompt").addEventListener("submit", e => {
+  e.preventDefault();
+  search(promptInput.value);
+});
+document.querySelectorAll("[data-q]").forEach(b => b.addEventListener("click", () => {
+  promptInput.value = b.dataset.q;
+  search(b.dataset.q);
+}));
+$("#clear-query").addEventListener("click", () => {
+  query = "";
+  promptInput.value = "";
+  replay(layout());
+});
+
+// The prompt types example searches into its placeholder until someone uses it.
+const ideas = ["magnetic button", "skeleton loader", "command palette", "tooltip", "swipe stack"];
+const restingHint = `Search ${snippets.length} snippets`;
+promptInput.placeholder = restingHint;
+if (!reduceMotion) {
+  let n = 0;
+  let length = 0;
+  let deleting = false;
+  (function typeHint() {
+    if (document.activeElement === promptInput || promptInput.value) {
+      promptInput.placeholder = restingHint;
+      return setTimeout(typeHint, 1200);
+    }
+    const word = ideas[n];
+    length += deleting ? -1 : 1;
+    promptInput.placeholder = `Try “${word.slice(0, length)}”`;
+    let delay = deleting ? 30 : 70;
+    if (!deleting && length === word.length) {
+      deleting = true;
+      delay = 1600;
+    } else if (deleting && length === 0) {
+      deleting = false;
+      n = (n + 1) % ideas.length;
+      delay = 250;
+    }
+    setTimeout(typeHint, delay);
+  })();
+}
+
+// Scroll reveal
+if (document.documentElement.classList.contains("reveal-on")) {
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add("in");
+    io.unobserve(e.target);
+  }), { rootMargin: "0px 0px -8% 0px" });
+  document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+}
+
+// Code viewer
+const viewer = $("#viewer"), codeEl = $("#viewer-code"), copyBtn = $("#copy");
+const LANG = { js: "javascript", html: "markup", css: "css" };
+let active, lang;
+
+function show(k) {
+  lang = k;
+  codeEl.innerHTML = window.Prism ? Prism.highlight(active[k], Prism.languages[LANG[k]], LANG[k]) : esc(active[k]);
+  viewer.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === k));
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-open]");
+  if (!b) return;
+  active = snippets[b.dataset.open];
+  $("#viewer-cat").textContent = active.category;
+  $("#viewer-title").textContent = active.title;
+  $("#viewer-demo").srcdoc = demo(active);
+  show("js");
+  viewer.showModal();
+});
+viewer.querySelector(".seg").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (b) show(b.dataset.k);
+});
+viewer.addEventListener("click", e => {
+  if (e.target === viewer || e.target.closest("[data-close]")) viewer.close();
+});
+
+async function copyText(text, button, selectOnFail) {
+  let ok = true;
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    // Clipboard API is blocked on file:// and plain http: fall back to the legacy copy command.
+    const area = Object.assign(document.createElement("textarea"), { value: text });
+    area.style.cssText = "position:fixed;top:0;opacity:0";
+    (button.closest("dialog") || document.body).append(area);
+    area.focus({ preventScroll: true });
+    area.select();
+    ok = document.execCommand("copy");
+    area.remove();
+    button.focus({ preventScroll: true });
+    if (!ok && selectOnFail) getSelection().selectAllChildren(selectOnFail);
+  }
+  button.dataset.label ??= button.textContent;
+  button.textContent = ok ? "Copied" : selectOnFail ? "Press Ctrl+C" : "Copy failed";
+  setTimeout(() => (button.textContent = button.dataset.label), 1400);
+}
+
+copyBtn.addEventListener("click", () => copyText(active[lang], copyBtn, codeEl));
+
+// Design notes: live contrast ratios on the A/B examples
+document.querySelectorAll("[data-fg]").forEach(el => {
+  const ratio = contrast(el.dataset.fg, el.dataset.bg);
+  el.textContent = `${floor2(ratio)}:1, ${ratio >= 7 ? "passes AAA" : ratio >= 4.5 ? "passes AA" : "fails AA"}`;
+});
+
+// Contrast checker
+const checker = $("#contrast");
+function updateContrast() {
+  const fg = checker.querySelector('[name="fg"]:checked').value;
+  const bg = checker.querySelector('[name="bg"]:checked').value;
+  const ratio = contrast(fg, bg);
+  Object.assign($("#contrast-preview").style, { color: fg, background: bg });
+  $("#contrast-ratio").textContent = `${floor2(ratio)}:1`;
+  $("#contrast-checks").innerHTML = [["AA body text", 4.5], ["AAA body text", 7], ["AA large text", 3]]
+    .map(([label, min]) => ratio >= min
+      ? `<li class="pass">✓ Pass <span>${label}, ${min}:1</span></li>`
+      : `<li class="fail">✕ Fail <span>${label}, ${min}:1</span></li>`)
+    .join("");
+}
+checker.addEventListener("change", updateContrast);
+updateContrast();
+
+// Harmony wheel: hues are offsets from the accent's hue
+const ACCENT_HUE = 18;
+const HARMONIES = {
+  complementary: { offsets: [0, 180], note: "Opposite hues. Maximum tension: good for one loud call to action, tiring everywhere else." },
+  analogous: { offsets: [-30, 0, 30], note: "Neighbors on the wheel. Calm and cohesive, but weak at pointing out what matters." },
+  triadic: { offsets: [0, 120, 240], note: "Three evenly spaced hues. Lively, as long as one leads and the other two stay small." }
+};
+const markers = [...document.querySelectorAll(".markers span")];
+function showHarmony(name) {
+  const { offsets, note } = HARMONIES[name];
+  const hues = offsets.map(o => (ACCENT_HUE + o + 360) % 360);
+  markers.forEach((m, i) => {
+    m.hidden = i >= hues.length;
+    if (i < hues.length) m.style.setProperty("--h", hues[i]);
+  });
+  $("#harmony-swatches").innerHTML = hues
+    .map(h => `<li><span style="background:hsl(${h} 78% 60%)"></span>${h}°${h === ACCENT_HUE ? " accent" : ""}</li>`)
+    .join("");
+  $("#harmony-note").textContent = note;
+}
+$("#harmony").addEventListener("change", e => showHarmony(e.target.value));
+showHarmony("complementary");
+
+// Finished, not just done: one card, every state
+const STATE_NOTES = {
+  default: "Default: real names and roles, and one clear primary action.",
+  empty: "Empty: say what belongs here and offer the first step. The header button steps aside, so there's one call to action.",
+  loading: "Loading: skeletons keep the final layout, so nothing jumps when the data lands.",
+  error: "Error: say what happened, what to do next, and whether anything was lost.",
+  long: "Long content: truncate with the full text on hover, and summarize the overflow instead of growing forever."
+};
+$("#states").addEventListener("change", e => {
+  const state = e.target.value;
+  document.querySelectorAll("[data-view]").forEach(v => (v.hidden = v.dataset.view !== state));
+  $("#invite").hidden = state === "empty" || state === "error";
+  $("#state-note").textContent = STATE_NOTES[state];
+});
+
+// Tokens, read from the live :root so the list can't drift from the CSS
+const TOKENS = ["--bg", "--surface", "--surface-2", "--line", "--line-strong", "--text", "--muted", "--subtle", "--accent", "--accent-hover", "--accent-ink", "--wine", "--r", "--r-inner", "--ease", "--serif", "--sans", "--mono"];
+const rootStyle = getComputedStyle(document.documentElement);
+const tokens = TOKENS.map(name => [name, rootStyle.getPropertyValue(name).trim()]);
+$("#token-list").innerHTML = tokens.map(([name, value]) => `
+  <div>
+    <dt>${name}</dt>
+    <dd>${/^(#|rgb)/.test(value) ? `<span class="swatch" style="background:${value}"></span>` : ""}${esc(value)}</dd>
+  </div>`).join("");
+$("#copy-tokens").addEventListener("click", e =>
+  copyText(`:root {\n${tokens.map(([n, v]) => `  ${n}: ${v};`).join("\n")}\n}`, e.currentTarget)
+);
+</script>
+</body>
+</html>
